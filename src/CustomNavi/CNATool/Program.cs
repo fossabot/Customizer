@@ -41,15 +41,16 @@ namespace CNATool {
                 MeshIdx = 0,
                 Materials = new List<Material>
                     {new Material {CoTextures = new Dictionary<string, int> {{"(shaderParameterName)", 0}}}},
-                CustomAttachPoints = new List<AttachPoint> {new AttachPoint {BoneName = "(boneName)"}}
+                CustomAttachPoints = new List<AttachPoint> { new AttachPoint { BoneName = "(boneName)" } }
             });
             def.MeshPaths.Add("(file|deflate://local/...)");
             def.SoundPaths.Add("(file|deflate://local/...)");
             def.TexturePaths.Add("(file|deflate://local/...)");
             def.TranslationPaths.Add("(file|deflate://local/...)");
             def.CoTextures.Add(new CoTextureDefinition {
-                Height = 1024, Width = 1024,
-                Textures = new List<SubTextureDefinition> {new SubTextureDefinition {MaskIdx = 0, TextureIdx = 0}}
+                Height = 1024,
+                Width = 1024,
+                Textures = new List<SubTextureDefinition> { new SubTextureDefinition { MaskIdx = 0, TextureIdx = 0 } }
             });
             using (var ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write))
                 ContentUtil.SerializeContentDefinition(def, ofs);
@@ -77,7 +78,7 @@ namespace CNATool {
             var src = File.ReadAllBytes(options.SourceFile);
             var def = ContentUtil.DeserializeContentDefinition(src);
             using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
-                CompressionMode.Compress, false))
+                CompressionLevel.Optimal, false))
                 ContentUtil.SerializeContentDefinition(def, ofs, false);
             return 0;
         }
@@ -107,24 +108,26 @@ namespace CNATool {
             using (var ifs = new FileStream(options.SourceFile, FileMode.Open, FileAccess.Read)) {
                 List<Tuple<string, BoneType>> boneRegexs = null;
                 List<Tuple<string, AttachPointType>> attachPointRegexs = null;
-                var mFile = new FileInfo(options.MatchFile);
-                if (mFile.Exists) {
-                    var doc = JsonDocument.Parse(mFile.OpenRead());
-                    var root = doc.RootElement;
-                    foreach (var elem in root.EnumerateObject()) {
-                        if ("bones".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
-                            boneRegexs = new List<Tuple<string, BoneType>>();
-                            foreach (var elem2 in elem.Value.EnumerateObject()) {
-                                Enum.TryParse(typeof(BoneType), elem2.Value.GetString(), true, out var type);
-                                boneRegexs.Add(new Tuple<string, BoneType>(elem2.Name, (BoneType) type));
+                if (options.MatchFile != null) {
+                    var mFile = new FileInfo(options.MatchFile);
+                    if (mFile.Exists) {
+                        var doc = JsonDocument.Parse(mFile.OpenRead());
+                        var root = doc.RootElement;
+                        foreach (var elem in root.EnumerateObject()) {
+                            if ("bones".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
+                                boneRegexs = new List<Tuple<string, BoneType>>();
+                                foreach (var elem2 in elem.Value.EnumerateObject()) {
+                                    Enum.TryParse(typeof(BoneType), elem2.Value.GetString(), true, out var type);
+                                    boneRegexs.Add(new Tuple<string, BoneType>(elem2.Name, (BoneType)type));
+                                }
                             }
-                        }
-                        else if ("attachPoint".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
-                            attachPointRegexs = new List<Tuple<string, AttachPointType>>();
-                            foreach (var elem2 in elem.Value.EnumerateObject()) {
-                                Enum.TryParse(typeof(AttachPointType), elem2.Value.GetString(), true, out var type);
-                                attachPointRegexs.Add(
-                                    new Tuple<string, AttachPointType>(elem2.Name, (AttachPointType) type));
+                            else if ("attachPoint".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
+                                attachPointRegexs = new List<Tuple<string, AttachPointType>>();
+                                foreach (var elem2 in elem.Value.EnumerateObject()) {
+                                    Enum.TryParse(typeof(AttachPointType), elem2.Value.GetString(), true, out var type);
+                                    attachPointRegexs.Add(
+                                        new Tuple<string, AttachPointType>(elem2.Name, (AttachPointType)type));
+                                }
                             }
                         }
                     }
@@ -134,7 +137,7 @@ namespace CNATool {
             }
 
             using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
-                CompressionMode.Compress, false))
+                CompressionLevel.Optimal, false))
                 Serializer.Serialize(ofs, mesh);
             return 0;
         }

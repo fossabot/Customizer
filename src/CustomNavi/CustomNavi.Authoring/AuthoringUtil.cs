@@ -12,8 +12,9 @@ namespace CustomNavi.Authoring {
     public static class AuthoringUtil {
         public static LiveMesh GenerateLiveMesh(Stream stream, List<Tuple<string, BoneType>> boneRegexs = null,
             List<Tuple<string, AttachPointType>> attachPointRegexs = null) {
-            using var ctx = new AssimpContext();
-            var scene = ctx.ImportFileFromStream(stream, PostProcessSteps.Triangulate, "fbx");
+            Scene scene;
+            using (var ctx = new AssimpContext())
+                scene = ctx.ImportFileFromStream(stream, PostProcessSteps.Triangulate, "fbx");
             var bones = new List<Bone>();
             var mBones = new List<Modeling.Bone>();
             var attachPoints = new List<AttachPoint>();
@@ -26,8 +27,7 @@ namespace CustomNavi.Authoring {
                 var normals = new Vector3[subMesh.VertexCount];
                 var weights = new BoneWeight[subMesh.VertexCount];
                 var triangles = new int[subMesh.FaceCount * 3];
-                var mSubMesh = subMeshes[iSubMesh] = new LiveSubMesh
-                    {Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles};
+                var mSubMesh = subMeshes[iSubMesh] = new LiveSubMesh { Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles };
                 // Get vertices
                 for (var iVertex = 0; iVertex < vertices.Length; iVertex++)
                     vertices[iVertex] = subMesh.Vertices[iVertex].ToVector3();
@@ -78,7 +78,7 @@ namespace CustomNavi.Authoring {
                     // Skip bone if already processed
                     if (bones.Contains(bone)) continue;
                     // Add bone
-                    var mBone = new Modeling.Bone {BoneName = bone.Name, BindPose = bone.OffsetMatrix.ToMatrix4x4()};
+                    var mBone = new Modeling.Bone { BoneName = bone.Name, BindPose = bone.OffsetMatrix.ToMatrix4x4() };
                     if (boneRegexs != null)
                         foreach (var (item1, item2) in boneRegexs)
                             if (Regex.IsMatch(bone.Name, item1)) {
@@ -93,7 +93,9 @@ namespace CustomNavi.Authoring {
                     foreach (var (item1, item2) in attachPointRegexs)
                         if (Regex.IsMatch(bone.Name, item1)) {
                             attachPoints.Add(new AttachPoint {
-                                BoneName = bone.Name, BindPose = bone.OffsetMatrix.ToMatrix4x4Array(), Type = item2
+                                BoneName = bone.Name,
+                                BindPose = bone.OffsetMatrix.ToMatrix4x4Array(),
+                                Type = item2
                             });
                             break;
                         }
@@ -101,7 +103,9 @@ namespace CustomNavi.Authoring {
             }
 
             return new LiveMesh {
-                Bones = mBones.ToArray(), DefaultAttachPoints = attachPoints.ToArray(), SubMeshes = subMeshes
+                Bones = mBones.ToArray(),
+                DefaultAttachPoints = attachPoints.ToArray(),
+                SubMeshes = subMeshes
             };
         }
 

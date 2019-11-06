@@ -11,5 +11,6 @@ namespace CustomNavi.Modeling {
         [NSerialize(2)] public int[] Triangles;
         [NSerialize(3)] public Vector3[] Vertices;
         [NSerialize(4)] public Vector3[] Normals;
+        [NSerialize(5)] public int MaterialIdx;
     }
 }

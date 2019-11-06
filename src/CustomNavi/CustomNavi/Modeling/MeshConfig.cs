@@ -18,7 +18,8 @@ namespace CustomNavi.Modeling {
         [NSerialize(3)]
         public Dictionary<int, AttachPoint> CustomAttachPoints { get; set; } = new Dictionary<int, AttachPoint>();
         [NSerialize(4)]
-        public Dictionary<string, int> CoTextureIdx { get; set; } = new Dictionary<string, int>();
+        public List<Material> Materials { get; set; } = new List<Material>();
+        
 
         public object Clone() {
             var res = new MeshConfig {
@@ -28,8 +29,7 @@ namespace CustomNavi.Modeling {
             foreach (var e in CustomAttachPoints)
                 res.CustomAttachPoints.Add(e.Key, e.Value);
             Array.Copy(AttachPointLocalTransform, res.AttachPointLocalTransform, AttachPointLocalTransform.Length);
-            foreach (var e in CoTextureIdx)
-                res.CoTextureIdx.Add(e.Key, e.Value);
+            res.Materials.AddRange(Materials);
             return res;
         }
     }

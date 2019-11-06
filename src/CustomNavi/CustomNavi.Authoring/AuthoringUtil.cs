@@ -10,8 +10,8 @@ using Matrix4x4 = System.Numerics.Matrix4x4;
 
 namespace CustomNavi.Authoring {
     public static class AuthoringUtil {
-        public static LiveMesh GenerateLiveMesh(Stream stream, List<Tuple<string, BoneType>> boneRegexs = null,
-            List<Tuple<string, AttachPointType>> attachPointRegexs = null) {
+        public static LiveMesh GenerateLiveMesh(Stream stream, List<Tuple<BoneType, string>> boneRegexs = null,
+            List<Tuple<AttachPointType, string>> attachPointRegexs = null) {
             Scene scene;
             using (var ctx = new AssimpContext())
                 scene = ctx.ImportFileFromStream(stream, PostProcessSteps.Triangulate, "fbx");
@@ -81,8 +81,8 @@ namespace CustomNavi.Authoring {
                     var mBone = new Modeling.Bone { BoneName = bone.Name, BindPose = bone.OffsetMatrix.ToMatrix4x4() };
                     if (boneRegexs != null)
                         foreach (var (item1, item2) in boneRegexs)
-                            if (Regex.IsMatch(bone.Name, item1)) {
-                                mBone.Type = item2;
+                            if (Regex.IsMatch(bone.Name, item2)) {
+                                mBone.Type = item1;
                                 break;
                             }
 
@@ -91,11 +91,11 @@ namespace CustomNavi.Authoring {
                     // Add attach point if applicable
                     if (attachPointRegexs == null) continue;
                     foreach (var (item1, item2) in attachPointRegexs)
-                        if (Regex.IsMatch(bone.Name, item1)) {
+                        if (Regex.IsMatch(bone.Name, item2)) {
                             attachPoints.Add(new AttachPoint {
                                 BoneName = bone.Name,
                                 BindPose = bone.OffsetMatrix.ToMatrix4x4Array(),
-                                Type = item2
+                                Type = item1
                             });
                             break;
                         }

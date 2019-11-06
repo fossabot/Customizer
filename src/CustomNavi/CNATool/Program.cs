@@ -106,8 +106,8 @@ namespace CNATool {
         private static int RunLiveMesh(LiveMeshOptions options) {
             LiveMesh mesh;
             using (var ifs = new FileStream(options.SourceFile, FileMode.Open, FileAccess.Read)) {
-                List<Tuple<string, BoneType>> boneRegexs = null;
-                List<Tuple<string, AttachPointType>> attachPointRegexs = null;
+                List<Tuple<BoneType, string>> boneRegexs = null;
+                List<Tuple<AttachPointType, string>> attachPointRegexs = null;
                 if (options.MatchFile != null) {
                     var mFile = new FileInfo(options.MatchFile);
                     if (mFile.Exists) {
@@ -115,18 +115,18 @@ namespace CNATool {
                         var root = doc.RootElement;
                         foreach (var elem in root.EnumerateObject()) {
                             if ("bones".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
-                                boneRegexs = new List<Tuple<string, BoneType>>();
+                                boneRegexs = new List<Tuple<BoneType, string>>();
                                 foreach (var elem2 in elem.Value.EnumerateObject()) {
-                                    Enum.TryParse(typeof(BoneType), elem2.Value.GetString(), true, out var type);
-                                    boneRegexs.Add(new Tuple<string, BoneType>(elem2.Name, (BoneType)type));
+                                    Enum.TryParse(typeof(BoneType), elem2.Name, true, out var type);
+                                    boneRegexs.Add(new Tuple<BoneType, string>((BoneType)type, elem2.Value.GetString()));
                                 }
                             }
-                            else if ("attachPoint".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
-                                attachPointRegexs = new List<Tuple<string, AttachPointType>>();
+                            else if ("attachPoints".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
+                                attachPointRegexs = new List<Tuple<AttachPointType, string>>();
                                 foreach (var elem2 in elem.Value.EnumerateObject()) {
-                                    Enum.TryParse(typeof(AttachPointType), elem2.Value.GetString(), true, out var type);
+                                    Enum.TryParse(typeof(AttachPointType), elem2.Name, true, out var type);
                                     attachPointRegexs.Add(
-                                        new Tuple<string, AttachPointType>(elem2.Name, (AttachPointType)type));
+                                        new Tuple<AttachPointType, string>((AttachPointType)type, elem2.Value.GetString()));
                                 }
                             }
                         }

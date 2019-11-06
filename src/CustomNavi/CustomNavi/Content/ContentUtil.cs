@@ -38,8 +38,8 @@ namespace CustomNavi.Content {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
             if (json)
-                using (var writer = new Utf8JsonWriter(stream)) {
-                    JsonSerializer.Serialize(writer, definition);
+                using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions {Indented = true})) {
+                    JsonSerializer.Serialize(writer, definition, new JsonSerializerOptions {WriteIndented = true});
                 }
             else
                 Serializer.Serialize(stream, definition);
@@ -55,7 +55,7 @@ namespace CustomNavi.Content {
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="definition"/> or <paramref name="resourceManager"/> are null</exception>
         /// <exception cref="Exception"></exception>
-        public static LiveContent LiveLoad(ContentDefinition definition, ResourceManager resourceManager,
+        public static LiveContent LoadLiveContent(ContentDefinition definition, ResourceManager resourceManager,
             LiveLoadOptions opts, CacheManager cacheManager = null) {
             if (definition == null)
                 throw new ArgumentNullException(nameof(definition));

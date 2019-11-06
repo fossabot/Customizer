@@ -1,4 +1,6 @@
-﻿using CustomNavi.Utility;
+﻿using System.Numerics;
+using CustomNavi.Utility;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace CustomNavi.Modeling {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance",
@@ -7,7 +9,6 @@ namespace CustomNavi.Modeling {
     public struct Bone {
         [NSerialize(0)] public BoneType Type { get; set; }
         [NSerialize(1)] public string BoneName { get; set; }
-        [NSerialize(2)] public int BindPoseIdx { get; set; }
-        [NSerialize(3)] public int ParentBoneIdx { get; set; }
+        [NSerialize(2)] public Matrix4x4 BindPose { get; set; }
     }
 }

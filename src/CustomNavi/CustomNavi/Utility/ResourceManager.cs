@@ -44,7 +44,9 @@ namespace CustomNavi.Utility {
             foreach (var provider in _providers) {
                 var res = provider.GetStream(uri);
                 if (res != null)
-                    return res;
+                    return "deflate".Equals(uri.Scheme, StringComparison.InvariantCultureIgnoreCase)
+                        ? new DeflateStream(res, CompressionMode.Decompress)
+                        : res;
             }
 
             return null;

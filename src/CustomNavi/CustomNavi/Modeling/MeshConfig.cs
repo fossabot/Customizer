@@ -16,7 +16,7 @@ namespace CustomNavi.Modeling {
         public float[] AttachPointLocalTransform { get; set; } = new float[16];
 
         [NSerialize(3)]
-        public Dictionary<int, AttachPoint> CustomAttachPoints { get; set; } = new Dictionary<int, AttachPoint>();
+        public List<AttachPoint> CustomAttachPoints { get; set; } = new List<AttachPoint>();
         [NSerialize(4)]
         public List<Material> Materials { get; set; } = new List<Material>();
         
@@ -26,8 +26,7 @@ namespace CustomNavi.Modeling {
                 MeshIdx = MeshIdx,
                 ParentAttachPoint = ParentAttachPoint
             };
-            foreach (var e in CustomAttachPoints)
-                res.CustomAttachPoints.Add(e.Key, e.Value);
+            res.CustomAttachPoints.AddRange(CustomAttachPoints);
             Array.Copy(AttachPointLocalTransform, res.AttachPointLocalTransform, AttachPointLocalTransform.Length);
             res.Materials.AddRange(Materials);
             return res;

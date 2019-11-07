@@ -154,58 +154,33 @@ namespace CustomNavi.Utility {
                 throw new ArgumentNullException(nameof(t));
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-            if (t == typeof(sbyte)) {
+            
+            if (t == typeof(sbyte))
                 return (sbyte) stream.ReadByteOrThrow();
-            }
-
-            if (t == typeof(byte)) {
+            if (t == typeof(byte))
                 return stream.ReadByteOrThrow();
-            }
-
-            if (t == typeof(short)) {
+            if (t == typeof(short))
                 return ReadS16(stream);
-            }
-
-            if (t == typeof(ushort)) {
+            if (t == typeof(ushort))
                 return ReadU16(stream);
-            }
-
-            if (t == typeof(int)) {
+            if (t == typeof(int))
                 return ReadS32(stream);
-            }
-
-            if (t == typeof(uint)) {
+            if (t == typeof(uint))
                 return ReadU32(stream);
-            }
-
-            if (t == typeof(long)) {
+            if (t == typeof(long))
                 return ReadS64(stream);
-            }
-
-            if (t == typeof(ulong)) {
+            if (t == typeof(ulong))
                 return ReadU64(stream);
-            }
-
-            if (t == typeof(float)) {
+            if (t == typeof(float))
                 return ReadSingle(stream);
-            }
-
-            if (t == typeof(double)) {
+            if (t == typeof(double))
                 return ReadDouble(stream);
-            }
-
-            if (!t.IsValueType && stream.ReadByteOrThrow() == 0) {
+            if (!t.IsValueType && stream.ReadByteOrThrow() == 0)
                 return null;
-            }
-
-            if (t.IsEnum) {
-                var et = t.GetEnumUnderlyingType();
-                return Deserialize(et, stream);
-            }
-
-            if (t == typeof(string)) {
+            if (t.IsEnum)
+                return Deserialize(t.GetEnumUnderlyingType(), stream);
+            if (t == typeof(string))
                 return ReadCString(stream);
-            }
 
             if (t.IsArray) {
                 var count = ReadS32(stream);
@@ -269,7 +244,7 @@ namespace CustomNavi.Utility {
                 return vArray;
             }
 
-            object res = Activator.CreateInstance(t);
+            var res = Activator.CreateInstance(t);
 
             if (IsListType(t)) {
                 var vList = res as IList;

@@ -7,7 +7,7 @@ namespace CustomNavi.Modeling {
         Justification = "<Pending>")]
     [NCustomSerializeMembers]
     public class MeshConfig : ICloneable {
-        [NSerialize(0)] public int MeshIdx { get; set; }
+        [NSerialize(0)] public string Mesh { get; set; }
         [NSerialize(1)] public AttachPointType ParentAttachPoint { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
@@ -23,7 +23,7 @@ namespace CustomNavi.Modeling {
 
         public object Clone() {
             var res = new MeshConfig {
-                MeshIdx = MeshIdx,
+                Mesh = Mesh,
                 ParentAttachPoint = ParentAttachPoint
             };
             res.CustomAttachPoints.AddRange(CustomAttachPoints);

@@ -402,7 +402,7 @@ namespace CustomNavi.Utility {
             return 0;
         }
 
-        public static int ReadCString(Span<byte> span, out string res, int offset = 0, int maxLength = int.MaxValue) {
+        private static int ReadCString(Span<byte> span, out string res, int offset = 0, int maxLength = int.MaxValue) {
             var sb = new StringBuilder();
             int v, c = 0;
             do {
@@ -477,17 +477,17 @@ namespace CustomNavi.Utility {
             => ((long) value).WriteTo(stream);
 
         private static void WriteTo(this float value, Stream stream) {
-            Span<byte> span = stackalloc byte[4];
+            Span<byte> span = stackalloc byte[sizeof(float)];
             MemoryMarshal.Cast<byte, float>(span)[0] = value;
-            foreach (var i in span)
-                stream.WriteByte(i);
+            for (var i = 0; i < sizeof(float); i++)
+                stream.WriteByte(span[i]);
         }
 
         private static void WriteTo(this double value, Stream stream) {
-            Span<byte> span = stackalloc byte[8];
+            Span<byte> span = stackalloc byte[sizeof(double)];
             MemoryMarshal.Cast<byte, double>(span)[0] = value;
-            foreach (var i in span)
-                stream.WriteByte(i);
+            for (var i = 0; i < sizeof(double); i++)
+                stream.WriteByte(span[i]);
         }
 
         private static bool IsList(object o) {

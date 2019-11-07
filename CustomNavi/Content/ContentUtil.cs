@@ -4,7 +4,6 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
 using System.Text.Json;
 using CustomNavi.Modeling;
 using CustomNavi.Utility;
@@ -55,6 +54,7 @@ namespace CustomNavi.Content {
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"><paramref name="definition"/> or <paramref name="resourceManager"/> are null</exception>
         /// <exception cref="Exception"></exception>
+        // ReSharper disable once UnusedMember.Global
         public static LiveContent LoadLiveContent(ContentDefinition definition, ResourceManager resourceManager,
             LiveLoadOptions opts, CacheManager cacheManager = null) {
             if (definition == null)
@@ -64,52 +64,56 @@ namespace CustomNavi.Content {
             definition = (ContentDefinition) definition.Clone();
 
             // Load meshes
-            var meshes = new LiveMesh[definition.MeshPaths.Count];
-            for (var i = 0; i < meshes.Length; i++) {
-                var path = definition.MeshPaths[i];
-                if (opts.UseMeshCache && (meshes[i] = cacheManager?.GetMesh(path)) != null)
-                    continue;
+            var meshes = new Dictionary<string, LiveMesh>();
+            foreach (var e in definition.MeshPaths) {
+                var path = e.Value;
+                LiveMesh mesh;
+                if (!opts.UseMeshCache || (mesh = cacheManager?.GetMesh(path)) == null) {
+                    byte[] array;
+                    using (var stream = resourceManager.GetStream(new Uri(path)))
+                    using (var ms = new MemoryStream()) {
+                        stream.CopyTo(ms);
+                        array = ms.ToArray();
+                    }
 
-                byte[] array;
-                using (var stream = resourceManager.GetStream(new Uri(path)))
-                using (var ms = new MemoryStream()) {
-                    stream.CopyTo(ms);
-                    array = ms.ToArray();
+                    Serializer.Deserialize(array, out mesh);
+                    if (opts.UseMeshCache)
+                        cacheManager?.AddMesh(path, mesh);
                 }
 
-                Serializer.Deserialize(array, out meshes[i]);
-                if (opts.UseMeshCache)
-                    cacheManager?.AddMesh(path, meshes[i]);
+                meshes.Add(e.Key, mesh);
             }
 
             // Load textures
-            var baseTextures = new Image<Rgba32>[definition.TexturePaths.Count];
-            var renderedCoTextures = new Image<Rgba32>[definition.CoTextures.Count];
-            for (var i = 0; i < baseTextures.Length; i++) {
-                var path = definition.TexturePaths[i];
-                if (opts.UseTextureCache && (baseTextures[i] = cacheManager?.GetTexture(path)) != null)
-                    continue;
-                using (var stream = resourceManager.GetStream(new Uri(path)))
-                    baseTextures[i] =
-                        Image.Load<Rgba32>(stream);
-                if (opts.UseTextureCache)
-                    cacheManager?.AddTexture(path, baseTextures[i]);
+            var baseTextures = new Dictionary<string, Image<Rgba32>>();
+            var renderedCoTextures = new Dictionary<string, Image<Rgba32>>();
+            foreach (var e in definition.TexturePaths) {
+                var path = e.Value;
+                Image<Rgba32> tex;
+                if (!opts.UseTextureCache || (tex = cacheManager?.GetTexture(path)) == null) {
+                    using (var stream = resourceManager.GetStream(new Uri(path)))
+                        tex = Image.Load<Rgba32>(stream);
+                    if (opts.UseTextureCache)
+                        cacheManager?.AddTexture(path, tex);
+                }
+
+                baseTextures.Add(e.Key, tex);
             }
 
             var maxSize = opts.MaxCoTextureSize;
             if (maxSize.Height == 0 || maxSize.Height == 0)
                 maxSize = Defaults.Size;
             // Iterate over rendered coalesced textures
-            for (var i = 0; i < renderedCoTextures.Length; i++) {
-                var conf = definition.CoTextures[i];
+            foreach (var e in definition.CoTextures) {
+                var conf = e.Value;
                 var target = new Image<Rgba32>(Math.Min(conf.Width, maxSize.Width),
                     Math.Min(conf.Height, maxSize.Height));
-                renderedCoTextures[i] = target;
+                renderedCoTextures.Add(e.Key, target);
                 // Iterate over sub-textures
                 foreach (var curSub in conf.Textures) {
-                    var curSrc = baseTextures[curSub.TextureIdx];
-                    var cur = curSub.MaskIdx >= 0
-                        ? baseTextures[curSub.MaskIdx].Clone(x => x
+                    var curSrc = baseTextures[curSub.Texture];
+                    var cur = curSub.Mask != null
+                        ? baseTextures[curSub.Mask].Clone(x => x
                             .Resize(curSrc.Size())
                             .DrawImage(curSrc,
                                 new GraphicsOptions {AlphaCompositionMode = PixelAlphaCompositionMode.SrcIn})
@@ -128,73 +132,54 @@ namespace CustomNavi.Content {
                 }
             }
 
-            // Load sounds
-            var sounds = new byte[definition.SoundPaths.Count][];
-            for (var i = 0; i < sounds.Length; i++) {
-                var path = definition.SoundPaths[i];
-                if (opts.UseSoundCache && (sounds[i] = cacheManager?.GetSound(path)) != null)
-                    continue;
-                byte[] array;
-                using (var stream = resourceManager.GetStream(new Uri(path)))
-                using (var ms = new MemoryStream()) {
-                    stream.CopyTo(ms);
-                    array = ms.ToArray();
+            // Load resources
+            var resources = new Dictionary<string, byte[]>();
+            foreach (var e in definition.ResourcePaths) {
+                var path = e.Value;
+                byte[] resource;
+                if (!opts.UseSoundCache || (resource = cacheManager?.GetResource(path)) == null) {
+                    using (var stream = resourceManager.GetStream(new Uri(path)))
+                    using (var ms = new MemoryStream()) {
+                        stream.CopyTo(ms);
+                        resource = ms.ToArray();
+                    }
+
+                    if (opts.UseSoundCache)
+                        cacheManager?.AddResource(path, resource);
                 }
 
-                sounds[i] = array;
-                if (opts.UseSoundCache)
-                    cacheManager?.AddSound(path, array);
+                resources.Add(e.Key, resource);
             }
 
             // Load translations
-            var translations = new Dictionary<string, string>[definition.TranslationPaths.Count];
-            for (var i = 0; i < translations.Length; i++) {
-                var path = definition.TranslationPaths[i];
-                if (opts.UseTranslationCache && (translations[i] = cacheManager?.GetTranslation(path)) != null)
-                    continue;
-                byte[] array;
-                using (var stream = resourceManager.GetStream(new Uri(path)))
-                using (var ms = new MemoryStream()) {
-                    stream.CopyTo(ms);
-                    array = ms.ToArray();
+            var translations = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var e in definition.TranslationPaths) {
+                var path = e.Value;
+                Dictionary<string, string> translation;
+                if (!opts.UseTranslationCache || (translation = cacheManager?.GetTranslation(path)) == null) {
+                    byte[] array;
+                    using (var stream = resourceManager.GetStream(new Uri(path)))
+                    using (var ms = new MemoryStream()) {
+                        stream.CopyTo(ms);
+                        array = ms.ToArray();
+                    }
+
+                    Serializer.Deserialize(array, out translation);
+                    if (opts.UseSoundCache)
+                        cacheManager?.AddTranslation(path, translation);
                 }
 
-                Serializer.Deserialize(array, out translations[i]);
-                if (opts.UseSoundCache)
-                    cacheManager?.AddTranslation(path, translations[i]);
+                translations.Add(e.Key, translation);
             }
 
-            var res = new LiveContent {
-                Definition = definition
+            return new LiveContent {
+                Definition = definition,
+                Meshes = meshes,
+                Textures = baseTextures,
+                RenderedCoTextures = renderedCoTextures,
+                Resources = resources,
+                Translations = translations
             };
-            res.Meshes.AddRange(meshes);
-            res.Textures.AddRange(baseTextures);
-            res.RenderedCoTextures.AddRange(renderedCoTextures);
-            res.Sounds.AddRange(sounds);
-            res.Translations.AddRange(translations);
-            return res;
         }
-
-        /// <summary>
-        /// Convert float array to 4x4 matrix
-        /// </summary>
-        /// <param name="m">Array to convert</param>
-        /// <returns>Matrix</returns>
-        // ReSharper disable InconsistentNaming
-        public static Matrix4x4 ToMatrix4x4(this float[] m)
-            => m.AsSpan().ToMatrix4x4();
-
-
-        /// <summary>
-        /// Convert span to 4x4 matrix
-        /// </summary>
-        /// <param name="m">Span to convert</param>
-        /// <returns>Matrix</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods",
-            Justification = "<Pending>")]
-        public static Matrix4x4 ToMatrix4x4(this Span<float> m)
-            => new Matrix4x4(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13],
-                m[14], m[15]);
-        // ReSharper restore InconsistentNaming
     }
 }

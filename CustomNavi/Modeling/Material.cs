@@ -7,7 +7,7 @@ namespace CustomNavi.Modeling {
         Justification = "<Pending>")]
     [NCustomSerializeMembers]
     public class Material : ICloneable {
-        [NSerialize(0)] public Dictionary<string, int> CoTextures { get; set; } = new Dictionary<string, int>();
+        [NSerialize(0)] public Dictionary<string, string> CoTextures { get; set; } = new Dictionary<string, string>();
 
         public object Clone() {
             var res = new Material();

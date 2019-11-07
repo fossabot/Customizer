@@ -12,11 +12,11 @@ namespace CustomNavi.Content {
         Justification = "<Pending>")]
     public class LiveContent : IDisposable {
         public ContentDefinition Definition;
-        public List<LiveMesh> Meshes = new List<LiveMesh>();
-        public List<Image<Rgba32>> Textures = new List<Image<Rgba32>>();
-        public List<Image<Rgba32>> RenderedCoTextures = new List<Image<Rgba32>>();
-        public List<byte[]> Sounds = new List<byte[]>();
-        public List<Dictionary<string, string>> Translations = new List<Dictionary<string, string>>();
+        public Dictionary<string, LiveMesh> Meshes = new Dictionary<string, LiveMesh>();
+        public Dictionary<string, Image<Rgba32>> Textures = new Dictionary<string, Image<Rgba32>>();
+        public Dictionary<string, Image<Rgba32>> RenderedCoTextures = new Dictionary<string, Image<Rgba32>>();
+        public Dictionary<string, byte[]> Resources = new Dictionary<string, byte[]>();
+        public Dictionary<string, Dictionary<string, string>> Translations = new Dictionary<string, Dictionary<string, string>>();
 
         // TODO content update functions
 
@@ -30,7 +30,7 @@ namespace CustomNavi.Content {
             Meshes = null;
             Textures = null;
             RenderedCoTextures = null;
-            Sounds = null;
+            Resources = null;
             Translations = null;
 
             _disposed = true;

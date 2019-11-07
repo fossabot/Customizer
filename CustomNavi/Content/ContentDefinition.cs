@@ -12,23 +12,34 @@ namespace CustomNavi.Content {
         Justification = "<Pending>")]
     [NCustomSerializeMembers]
     public class ContentDefinition : ICloneable {
-        [NSerialize(0)] public List<string> MeshPaths { get; set; } = new List<string>();
-        [NSerialize(1)] public List<string> TexturePaths { get; set; } = new List<string>();
-        [NSerialize(2)] public List<string> SoundPaths { get; set; } = new List<string>();
-        [NSerialize(3)] public List<string> TranslationPaths { get; set; } = new List<string>();
-        [NSerialize(4)] public List<MeshConfig> MeshConfigs { get; set; } = new List<MeshConfig>();
-        [NSerialize(5)] public List<CoTextureDefinition> CoTextures { get; set; } = new List<CoTextureDefinition>();
+        [NSerialize(0)] public Dictionary<string, string> MeshPaths { get; set; } = new Dictionary<string, string>();
+        [NSerialize(1)] public Dictionary<string, string> TexturePaths { get; set; } = new Dictionary<string, string>();
+        [NSerialize(2)] public Dictionary<string, string> ResourcePaths { get; set; } = new Dictionary<string, string>();
+
+        [NSerialize(3)]
+        public Dictionary<string, string> TranslationPaths { get; set; } = new Dictionary<string, string>();
+
+        [NSerialize(4)]
+        public Dictionary<string, MeshConfig> MeshConfigs { get; set; } = new Dictionary<string, MeshConfig>();
+
+        [NSerialize(5)]
+        public Dictionary<string, CoTextureDefinition> CoTextures { get; set; } =
+            new Dictionary<string, CoTextureDefinition>();
 
         public object Clone() {
             var res = new ContentDefinition();
-            res.MeshPaths.AddRange(MeshPaths);
+            foreach (var e in MeshPaths)
+                res.MeshPaths.Add(e.Key, e.Value);
             foreach (var e in MeshConfigs)
-                res.MeshConfigs.Add((MeshConfig) e.Clone());
-            res.TexturePaths.AddRange(TexturePaths);
-            res.SoundPaths.AddRange(SoundPaths);
-            res.TranslationPaths.AddRange(TranslationPaths);
+                res.MeshConfigs.Add(e.Key, (MeshConfig) e.Value.Clone());
+            foreach (var e in TexturePaths)
+                res.TexturePaths.Add(e.Key, e.Value);
+            foreach (var e in ResourcePaths)
+                res.ResourcePaths.Add(e.Key, e.Value);
+            foreach (var e in TranslationPaths)
+                res.TranslationPaths.Add(e.Key, e.Value);
             foreach (var e in CoTextures)
-                res.CoTextures.Add((CoTextureDefinition) e.Clone());
+                res.CoTextures.Add(e.Key, (CoTextureDefinition) e.Value.Clone());
             return res;
         }
     }

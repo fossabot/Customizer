@@ -10,7 +10,7 @@ namespace CustomNavi.Utility {
     public class CacheManager {
         private readonly Dictionary<string, LiveMesh> _meshes = new Dictionary<string, LiveMesh>();
         private readonly Dictionary<string, Image<Rgba32>> _textures = new Dictionary<string, Image<Rgba32>>();
-        private readonly Dictionary<string, byte[]> _sounds = new Dictionary<string, byte[]>();
+        private readonly Dictionary<string, byte[]> _resources = new Dictionary<string, byte[]>();
 
         private readonly Dictionary<string, Dictionary<string, string>> _translations =
             new Dictionary<string, Dictionary<string, string>>();
@@ -51,23 +51,23 @@ namespace CustomNavi.Utility {
         public void ClearTextures()
             => _textures.Clear();
 
-        public byte[] GetSound(string path)
-            => _sounds.TryGetValue(path, out var res) ? res : null;
+        public byte[] GetResource(string path)
+            => _resources.TryGetValue(path, out var res) ? res : null;
 
-        public void AddSound(string path, byte[] sound)
-            => _sounds.Add(path, sound);
+        public void AddResource(string path, byte[] resource)
+            => _resources.Add(path, resource);
 
-        public int GetSoundCount()
-            => _sounds.Count;
+        public int GetResourceCount()
+            => _resources.Count;
 
-        public Dictionary<string, byte[]>.Enumerator GetSoundEnumerator()
-            => _sounds.GetEnumerator();
+        public Dictionary<string, byte[]>.Enumerator GetResourceEnumerator()
+            => _resources.GetEnumerator();
 
-        public void RemoveSound(string path)
-            => _sounds.Remove(path);
+        public void RemoveResource(string path)
+            => _resources.Remove(path);
 
-        public void ClearSounds()
-            => _sounds.Clear();
+        public void ClearResources()
+            => _resources.Clear();
 
         public Dictionary<string, string> GetTranslation(string path)
             => _translations.TryGetValue(path, out var res) ? res : null;

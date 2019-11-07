@@ -37,20 +37,23 @@ namespace CNATool {
 
         private static int RunTemplate(TemplateOptions options) {
             var def = new ContentDefinition();
-            def.MeshConfigs.Add(new MeshConfig {
-                MeshIdx = 0,
-                Materials = new List<Material>
-                    {new Material {CoTextures = new Dictionary<string, int> {{"(shaderParameterName)", 0}}}},
-                CustomAttachPoints = new List<AttachPoint> { new AttachPoint { BoneName = "(boneName)" } }
+            def.MeshConfigs.Add("(configName)", new MeshConfig {
+                Mesh = "(meshName)",
+                Materials = new List<Material> {
+                    new Material
+                        {CoTextures = new Dictionary<string, string> {{"(shaderParameterName)", "(textureName)"}}}
+                },
+                CustomAttachPoints = new List<AttachPoint> {new AttachPoint {BoneName = "(boneName)"}}
             });
-            def.MeshPaths.Add("(file|deflate://local/...)");
-            def.SoundPaths.Add("(file|deflate://local/...)");
-            def.TexturePaths.Add("(file|deflate://local/...)");
-            def.TranslationPaths.Add("(file|deflate://local/...)");
-            def.CoTextures.Add(new CoTextureDefinition {
+            def.MeshPaths.Add("(meshName)", "(file|deflate://local/...)");
+            def.ResourcePaths.Add("(resourceName)", "(file|deflate://local/...)");
+            def.TexturePaths.Add("(textureName)", "(file|deflate://local/...)");
+            def.TranslationPaths.Add("(translationName)", "(file|deflate://local/...)");
+            def.CoTextures.Add("(coTextureName)", new CoTextureDefinition {
                 Height = 1024,
                 Width = 1024,
-                Textures = new List<SubTextureDefinition> { new SubTextureDefinition { MaskIdx = 0, TextureIdx = 0 } }
+                Textures = new List<SubTextureDefinition>
+                    {new SubTextureDefinition {Mask = "(coTextureName)", Texture = "(coTextureName)"}}
             });
             using (var ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write))
                 ContentUtil.SerializeContentDefinition(def, ofs);
@@ -118,7 +121,8 @@ namespace CNATool {
                                 boneRegexs = new List<Tuple<BoneType, string>>();
                                 foreach (var elem2 in elem.Value.EnumerateObject()) {
                                     Enum.TryParse(typeof(BoneType), elem2.Name, true, out var type);
-                                    boneRegexs.Add(new Tuple<BoneType, string>((BoneType)type, elem2.Value.GetString()));
+                                    boneRegexs.Add(
+                                        new Tuple<BoneType, string>((BoneType) type, elem2.Value.GetString()));
                                 }
                             }
                             else if ("attachPoints".Equals(elem.Name, StringComparison.InvariantCultureIgnoreCase)) {
@@ -126,7 +130,8 @@ namespace CNATool {
                                 foreach (var elem2 in elem.Value.EnumerateObject()) {
                                     Enum.TryParse(typeof(AttachPointType), elem2.Name, true, out var type);
                                     attachPointRegexs.Add(
-                                        new Tuple<AttachPointType, string>((AttachPointType)type, elem2.Value.GetString()));
+                                        new Tuple<AttachPointType, string>((AttachPointType) type,
+                                            elem2.Value.GetString()));
                                 }
                             }
                         }

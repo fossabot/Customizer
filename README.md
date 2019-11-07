@@ -3,7 +3,7 @@
 
 This library is meant to provide a basic common custom character creation toolkit.
 
-Given a certain standard library of resources, users can write JSON text referencing named resources by path and defining certain custom properties (e.g. custom mesh armor attach points and layered texture generation) that can then be loaded into common formats for consumption by any libraries that use this library.
+Given a certain standard library of resources, users can write JSON text referencing named resources by path and defining certain custom properties (e.g. custom armor attach points and layered texture generation) that can then be loaded into common formats for consumption by any libraries that use this library.
 
 ## CustomNavi
 
@@ -44,3 +44,8 @@ This command-line program provides some utilities:
         }
     }
     ```
+
+## TO-DO
+
+* Add live content manipulation (add/update/remove texture/mesh)
+* Add content packing structure and utility

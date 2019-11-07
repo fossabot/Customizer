@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -24,9 +23,8 @@ namespace CustomNavi.Test {
                 v = new Vector3(1.0f, 2.0f, 3.0f)
             };
             Serializer.Serialize(ms, y);
-            var span = ms.ToArray().AsSpan();
-            var len = Serializer.Deserialize(span, out A z);
-            Assert.AreEqual(ms.Length, len, "Serialize/Deserialize length check fail");
+            ms.Position = 0;
+            var z = Serializer.Deserialize<A>(ms);
             Assert.AreEqual(y.w, z.w, "field check fail");
             Assert.AreEqual(y.H, z.H, "property check fail");
             Assert.IsNotNull(z.a, "array null check fail");
@@ -60,9 +58,8 @@ namespace CustomNavi.Test {
                 v = new Vector3(1.0f, 2.0f, 3.0f)
             };
             Serializer.Serialize(ms, y);
-            var span = ms.ToArray().AsSpan();
-            var len = Serializer.Deserialize(span, out X z);
-            Assert.AreEqual(ms.Length, len, "Serialize/Deserialize length check fail");
+            ms.Position = 0;
+            var z = Serializer.Deserialize<X>(ms);
             Assert.AreEqual(y.w, z.w, "field check fail");
             Assert.AreEqual(y.H, z.H, "property check fail");
             Assert.IsNotNull(z.a, "array null check fail");
@@ -96,9 +93,8 @@ namespace CustomNavi.Test {
                 v = new Vector3(1.0f, 2.0f, 3.0f)
             };
             Serializer.Serialize(ms, y);
-            var span = ms.ToArray().AsSpan();
-            var len = Serializer.Deserialize(span, out Xe z);
-            Assert.AreEqual(ms.Length, len, "Serialize/Deserialize length check fail");
+            ms.Position = 0;
+            var z = Serializer.Deserialize<Xe>(ms);
             Assert.AreEqual(y.w, z.w, "field check fail");
             Assert.AreEqual(y.H, z.H, "property check fail");
             Assert.IsNotNull(z.a, "array null check fail");

@@ -9,14 +9,14 @@ namespace CustomNavi.Utility {
             MaxCoTextureSize = maxCoTextureSize ?? Defaults.Size;
             UseMeshCache = useMeshCache ?? false;
             UseTextureCache = useTextureCache ?? false;
-            UseSoundCache = useSoundCache ?? false;
+            UseResourceCache = useSoundCache ?? false;
             UseTranslationCache = useTranslationCache ?? false;
         }
 
         public Size MaxCoTextureSize { get; set; }
         public bool UseMeshCache { get; set; }
         public bool UseTextureCache { get; set; }
-        public bool UseSoundCache { get; set; }
+        public bool UseResourceCache { get; set; }
         public bool UseTranslationCache { get; set; }
     }
 }

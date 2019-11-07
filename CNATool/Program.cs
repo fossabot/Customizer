@@ -78,8 +78,7 @@ namespace CNATool {
         }
 
         private static int RunBinDef(BinDefOptions options) {
-            var src = File.ReadAllBytes(options.SourceFile);
-            var def = ContentUtil.DeserializeContentDefinition(src);
+            var def = ContentUtil.DeserializeContentDefinition(new FileStream(options.SourceFile, FileMode.Open, FileAccess.Read));
             using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
                 CompressionLevel.Optimal, false))
                 ContentUtil.SerializeContentDefinition(def, ofs, false);

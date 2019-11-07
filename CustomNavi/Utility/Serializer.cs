@@ -137,224 +137,162 @@ namespace CustomNavi.Utility {
         /// <summary>
         /// Deserialize object of given type
         /// </summary>
-        /// <param name="span">Span to read from</param>
-        /// <param name="offset">Offset in span to start at</param>
+        /// <param name="stream">Stream to read from</param>
         /// <returns>Deserialized object</returns>
-        public static T Deserialize<T>(Span<byte> span, int offset = 0) {
-            Deserialize(typeof(T), span, out var ires, offset);
-            return (T) ires;
-        }
-
-        /// <summary>
-        /// Deserialize object of given type
-        /// </summary>
-        /// <param name="span">Span to read from</param>
-        /// <param name="res">Deserialized object</param>
-        /// <param name="offset">Offset in span to start at</param>
-        /// <returns>Length of read serialized data</returns>
-        public static int Deserialize<T>(Span<byte> span, out T res, int offset = 0) {
-            var len = Deserialize(typeof(T), span, out var ires, offset);
-            res = (T) ires;
-            return len;
-        }
+        public static T Deserialize<T>(Stream stream)
+            => (T) Deserialize(typeof(T), stream);
 
         /// <summary>
         /// Deserialize object of given type
         /// </summary>
         /// <param name="t">Target deserialized type</param>
-        /// <param name="span">Span to read from</param>
-        /// <param name="res">Deserialized object</param>
-        /// <param name="offset">Offset in span to start at</param>
-        /// <returns>Length of read serialized data</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="t"/> is null</exception>
-        public static int Deserialize(Type t, Span<byte> span, out object res, int offset = 0) {
+        /// <param name="stream">Stream to read from</param>
+        /// <returns>Deserialized object</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="t"/> or <paramref name="stream"/> are null</exception>
+        public static object Deserialize(Type t, Stream stream) {
             if (t == null)
                 throw new ArgumentNullException(nameof(t));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
             if (t == typeof(sbyte)) {
-                res = (sbyte) span[offset];
-                return 1;
+                return (sbyte) stream.ReadByteOrThrow();
             }
 
             if (t == typeof(byte)) {
-                res = span[offset];
-                return 1;
+                return stream.ReadByteOrThrow();
             }
 
             if (t == typeof(short)) {
-                res = ReadS16(span, offset);
-                return 2;
+                return ReadS16(stream);
             }
 
             if (t == typeof(ushort)) {
-                res = ReadU16(span, offset);
-                return 2;
+                return ReadU16(stream);
             }
 
             if (t == typeof(int)) {
-                res = ReadS32(span, offset);
-                return 4;
+                return ReadS32(stream);
             }
 
             if (t == typeof(uint)) {
-                res = ReadU32(span, offset);
-                return 4;
+                return ReadU32(stream);
             }
 
             if (t == typeof(long)) {
-                res = ReadS64(span, offset);
-                return 8;
+                return ReadS64(stream);
             }
 
             if (t == typeof(ulong)) {
-                res = ReadU64(span, offset);
-                return 8;
+                return ReadU64(stream);
             }
 
             if (t == typeof(float)) {
-                res = ReadSingle(span, offset);
-                return 4;
+                return ReadSingle(stream);
             }
 
             if (t == typeof(double)) {
-                res = ReadDouble(span, offset);
-                return 8;
+                return ReadDouble(stream);
             }
 
-            var len = t.IsValueType ? 0 : 1;
-
-            if (!t.IsValueType && span[0] == 0) {
-                res = null;
-                return len;
+            if (!t.IsValueType && stream.ReadByteOrThrow() == 0) {
+                return null;
             }
 
             if (t.IsEnum) {
                 var et = t.GetEnumUnderlyingType();
-                return Deserialize(et, span, out res, offset);
+                return Deserialize(et, stream);
             }
 
             if (t == typeof(string)) {
-                len += ReadCString(span.Slice(offset + len), out var sres);
-                res = sres;
-                return len;
+                return ReadCString(stream);
             }
 
             if (t.IsArray) {
-                var count = ReadS32(span, offset + len);
-                len += 4;
+                var count = ReadS32(stream);
                 var t2 = t.GetElementType() ??
                          throw new Exception($"Element type for array not found in object of type {t}");
                 var vArray = Array.CreateInstance(t2, count);
-                res = vArray;
                 // Possible shortcut deserialization for primitives
                 if (t == typeof(sbyte)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(span[offset + len], i);
-                        len++;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(stream.ReadByteOrThrow(), i);
                 }
 
                 else if (t == typeof(byte)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(span[offset + len], i);
-                        len++;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(stream.ReadByteOrThrow(), i);
                 }
 
                 else if (t == typeof(short)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadS16(span, offset + len), i);
-                        len += 2;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadS16(stream), i);
                 }
 
                 else if (t == typeof(ushort)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadU16(span, offset + len), i);
-                        len += 2;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadS32(stream), i);
                 }
 
                 else if (t == typeof(int)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadS32(span, offset + len), i);
-                        len += 4;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadS32(stream), i);
                 }
 
                 else if (t == typeof(uint)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadU32(span, offset + len), i);
-                        len += 4;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadU32(stream), i);
                 }
 
                 else if (t == typeof(long)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadS64(span, offset + len), i);
-                        len += 8;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadS64(stream), i);
                 }
 
                 else if (t == typeof(ulong)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadU64(span, offset + len), i);
-                        len += 8;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadU64(stream), i);
                 }
 
                 else if (t == typeof(float)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadSingle(span, offset + len), i);
-                        len += 4;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadSingle(stream), i);
                 }
 
                 else if (t == typeof(double)) {
-                    for (var i = 0; i < count; i++) {
-                        vArray.SetValue(ReadDouble(span, offset + len), i);
-                        len += 8;
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(ReadDouble(stream), i);
                 }
                 else
-                    for (var i = 0; i < count; i++) {
-                        len += Deserialize(t2, span, out var res2, offset + len);
-                        vArray.SetValue(res2, i);
-                    }
+                    for (var i = 0; i < count; i++)
+                        vArray.SetValue(Deserialize(t2, stream), i);
 
-                return len;
+                return vArray;
             }
 
-            res = Activator.CreateInstance(t);
+            object res = Activator.CreateInstance(t);
 
             if (IsListType(t)) {
                 var vList = res as IList;
                 Debug.Assert(vList != null, nameof(vList) + " != null");
-                var count = ReadS32(span, offset + len);
-                len += 4;
+                var count = ReadS32(stream);
                 var t2 = t.GetGenericArguments()[0];
-                for (var i = 0; i < count; i++) {
-                    len += Deserialize(t2, span, out var res2, offset + len);
-                    vList.Add(res2);
-                }
+                for (var i = 0; i < count; i++)
+                    vList.Add(Deserialize(t2, stream));
 
-                return len;
+                return vList;
             }
 
             if (IsDictionaryType(t)) {
                 var vDict = res as IDictionary;
                 Debug.Assert(vDict != null, nameof(vDict) + " != null");
-                var count = ReadS32(span, offset + len);
-                len += 4;
+                var count = ReadS32(stream);
                 var targs = t.GetGenericArguments();
                 var t2 = targs[0];
                 var t3 = targs[1];
-                for (var i = 0; i < count; i++) {
-                    len += Deserialize(t2, span, out var res2, offset + len);
-                    len += Deserialize(t3, span, out var res3, offset + len);
-                    vDict.Add(res2, res3);
-                }
+                for (var i = 0; i < count; i++)
+                    vDict.Add(Deserialize(t2, stream), Deserialize(t3, stream));
 
-                return len;
+                return vDict;
             }
 
             var members = t.GetMembers();
@@ -367,82 +305,88 @@ namespace CustomNavi.Utility {
 
                 int tag;
                 do {
-                    tag = ReadS32(span, offset + len);
-                    len += 4;
+                    tag = ReadS32(stream);
                     if (tag != -1)
-                        len += TryDeserializeMember(dict[tag], span, res, offset + len);
+                        TryDeserializeMember(dict[tag], stream, res);
                 } while (tag != -1);
             }
             else
                 foreach (var m in members)
-                    len += TryDeserializeMember(m, span, res, offset + len);
+                    TryDeserializeMember(m, stream, res);
 
-            return len;
+            return res;
         }
 
-        private static int TryDeserializeMember(MemberInfo info, Span<byte> span, object target, int offset) {
-            int len;
+        private static void TryDeserializeMember(MemberInfo info, Stream stream, object target) {
             switch (info.MemberType) {
                 case MemberTypes.Field:
                     var fi = (FieldInfo) info;
-                    len = Deserialize(fi.FieldType, span, out var fres, offset);
+                    var fres = Deserialize(fi.FieldType, stream);
                     ((FieldInfo) info).SetValue(target, fres);
-                    return len;
+                    break;
                 case MemberTypes.Property:
                     var pi = (PropertyInfo) info;
                     if (pi.CanRead && pi.CanWrite) {
-                        len = Deserialize(pi.PropertyType, span, out var pres, offset);
+                        var pres = Deserialize(pi.PropertyType, stream);
                         ((PropertyInfo) info).SetValue(target, pres);
-                        return len;
                     }
 
                     break;
             }
-
-            return 0;
         }
 
-        private static int ReadCString(Span<byte> span, out string res, int offset = 0, int maxLength = int.MaxValue) {
-            var sb = new StringBuilder();
+        public static string ReadCString(Stream stream, int maxLength = int.MaxValue) {
+            StringBuilder sb = new StringBuilder();
             int v, c = 0;
             do {
-                v = span[offset + c];
-                if (v != 0)
+                v = stream.ReadByte();
+                if (v != -1 && v != 0)
                     sb.Append((char) v);
-                c++;
-            } while (v != 0 && c < maxLength);
+                if (v != -1)
+                    c++;
+            } while (v != -1 && v != 0 && c < maxLength);
 
-            res = sb.ToString();
-            return c;
+            return sb.ToString();
         }
 
-        private static short ReadS16(Span<byte> span, int offset = 0)
-            => (short) (span[offset] + (span[offset + 1] << 8));
+        private static short ReadS16(Stream stream)
+            => (short) (stream.ReadByteOrThrow() + (stream.ReadByteOrThrow() << 8));
 
-        private static ushort ReadU16(Span<byte> span, int offset = 0)
-            => (ushort) ReadS16(span, offset);
+        private static ushort ReadU16(Stream stream)
+            => (ushort) ReadS16(stream);
 
-        private static int ReadS32(Span<byte> span, int offset = 0)
-            => span[offset] + (span[offset + 1] << 8) + (span[offset + 2] << 16) +
-               (span[offset + 3] << 24);
+        private static int ReadS32(Stream stream)
+            => stream.ReadByteOrThrow() + (stream.ReadByteOrThrow() << 8) + (stream.ReadByteOrThrow() << 16) +
+               (stream.ReadByteOrThrow() << 24);
 
-        private static uint ReadU32(Span<byte> span, int offset = 0)
-            => (uint) ReadS32(span, offset);
+        private static uint ReadU32(Stream stream)
+            => (uint) ReadS32(stream);
 
-        private static long ReadS64(Span<byte> span, int offset = 0)
-            => span[offset] + ((long) span[offset + 1] << 8) + ((long) span[offset + 2] << 16) +
-               ((long) span[offset + 3] << 24)
-               + ((long) span[offset + 4] << 32) + ((long) span[offset + 5] << 40) +
-               ((long) span[offset + 6] << 48) + ((long) span[offset + 7] << 56);
+        private static long ReadS64(Stream stream)
+            => stream.ReadByteOrThrow() + ((long) stream.ReadByteOrThrow() << 8) +
+               ((long) stream.ReadByteOrThrow() << 16) +
+               ((long) stream.ReadByteOrThrow() << 24)
+               + ((long) stream.ReadByteOrThrow() << 32) + ((long) stream.ReadByteOrThrow() << 40) +
+               ((long) stream.ReadByteOrThrow() << 48) + ((long) stream.ReadByteOrThrow() << 56);
 
-        private static ulong ReadU64(Span<byte> span, int offset = 0)
-            => (ulong) ReadS64(span, offset);
+        private static ulong ReadU64(Stream stream)
+            => (ulong) ReadS64(stream);
 
-        private static float ReadSingle(Span<byte> span, int offset = 0)
-            => MemoryMarshal.Cast<byte, float>(span.Slice(offset, 4))[0];
+        private static float ReadSingle(Stream stream) {
+            Span<float> span = stackalloc float[1];
+            Span<byte> bSpan = MemoryMarshal.Cast<float, byte>(span);
+            for (var i = 0; i < sizeof(float); i++)
+                bSpan[i] = stream.ReadByteOrThrow();
+            return span[0];
+        }
 
-        private static double ReadDouble(Span<byte> span, int offset = 0)
-            => MemoryMarshal.Cast<byte, double>(span.Slice(offset, 8))[0];
+        private static double ReadDouble(Stream stream) {
+            Span<double> span = stackalloc double[1];
+            Span<byte> bSpan = MemoryMarshal.Cast<double, byte>(span);
+            for (var i = 0; i < sizeof(double); i++)
+                bSpan[i] = stream.ReadByteOrThrow();
+            return span[0];
+        }
 
         private static void WriteTo(this short value, Stream stream) {
             stream.WriteByte((byte) value);
@@ -506,5 +450,12 @@ namespace CustomNavi.Utility {
         private static bool IsDictionaryType(Type t)
             => t.IsGenericType &&
                t.GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
+
+        private static byte ReadByteOrThrow(this Stream stream) {
+            var res = stream.ReadByte();
+            if (res == -1)
+                throw new EndOfStreamException();
+            return (byte) res;
+        }
     }
 }

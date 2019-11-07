@@ -16,13 +16,21 @@ namespace CustomNavi.Content {
         /// <summary>
         /// Deserialize content definition from json or binary
         /// </summary>
-        /// <param name="span">Span to read from</param>
+        /// <param name="stream">Strema to read from</param>
         /// <param name="json">If true, deserialize from json</param>
         /// <returns>Deserialized definition</returns>
-        public static ContentDefinition DeserializeContentDefinition(Span<byte> span, bool json = true)
-            => json
-                ? JsonSerializer.Deserialize<ContentDefinition>(span)
-                : Serializer.Deserialize<ContentDefinition>(span);
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
+        public static ContentDefinition DeserializeContentDefinition(Stream stream, bool json = true) {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            if (json) {
+                var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                return JsonSerializer.Deserialize<ContentDefinition>(ms.ToArray());
+            }
+
+            return Serializer.Deserialize<ContentDefinition>(stream);
+        }
 
         /// <summary>
         /// Serialize content definition to json or binary
@@ -69,14 +77,9 @@ namespace CustomNavi.Content {
                 var path = e.Value;
                 LiveMesh mesh;
                 if (!opts.UseMeshCache || (mesh = cacheManager?.GetMesh(path)) == null) {
-                    byte[] array;
                     using (var stream = resourceManager.GetStream(new Uri(path)))
-                    using (var ms = new MemoryStream()) {
-                        stream.CopyTo(ms);
-                        array = ms.ToArray();
-                    }
+                        mesh = Serializer.Deserialize<LiveMesh>(stream);
 
-                    Serializer.Deserialize(array, out mesh);
                     if (opts.UseMeshCache)
                         cacheManager?.AddMesh(path, mesh);
                 }
@@ -137,14 +140,14 @@ namespace CustomNavi.Content {
             foreach (var e in definition.ResourcePaths) {
                 var path = e.Value;
                 byte[] resource;
-                if (!opts.UseSoundCache || (resource = cacheManager?.GetResource(path)) == null) {
+                if (!opts.UseResourceCache || (resource = cacheManager?.GetResource(path)) == null) {
                     using (var stream = resourceManager.GetStream(new Uri(path)))
                     using (var ms = new MemoryStream()) {
                         stream.CopyTo(ms);
                         resource = ms.ToArray();
                     }
 
-                    if (opts.UseSoundCache)
+                    if (opts.UseResourceCache)
                         cacheManager?.AddResource(path, resource);
                 }
 
@@ -157,15 +160,10 @@ namespace CustomNavi.Content {
                 var path = e.Value;
                 Dictionary<string, string> translation;
                 if (!opts.UseTranslationCache || (translation = cacheManager?.GetTranslation(path)) == null) {
-                    byte[] array;
                     using (var stream = resourceManager.GetStream(new Uri(path)))
-                    using (var ms = new MemoryStream()) {
-                        stream.CopyTo(ms);
-                        array = ms.ToArray();
-                    }
+                        translation = Serializer.Deserialize<Dictionary<string, string>>(stream);
 
-                    Serializer.Deserialize(array, out translation);
-                    if (opts.UseSoundCache)
+                    if (opts.UseTranslationCache)
                         cacheManager?.AddTranslation(path, translation);
                 }
 

@@ -9,7 +9,7 @@ Given a certain standard library of resources, users can write JSON text referen
 
 **Framework:** .NET Standard 2.0
 
-This library provides the base API and functions for loading resources using a content definition into a live object ready for consumption.
+This library provides the base API and functions for loading resources using a content definition into a live object ready for consumption and functions for data serialization.
 
 ## CustomNavi.Authoring
 

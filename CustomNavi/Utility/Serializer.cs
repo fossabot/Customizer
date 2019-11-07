@@ -187,7 +187,6 @@ namespace CustomNavi.Utility {
                 var t2 = t.GetElementType() ??
                          throw new Exception($"Element type for array not found in object of type {t}");
                 var vArray = Array.CreateInstance(t2, count);
-                // Possible shortcut deserialization for primitives
                 if (t == typeof(sbyte)) {
                     for (var i = 0; i < count; i++)
                         vArray.SetValue(stream.ReadByteOrThrow(), i);
@@ -310,8 +309,8 @@ namespace CustomNavi.Utility {
             }
         }
 
-        public static string ReadCString(Stream stream, int maxLength = int.MaxValue) {
-            StringBuilder sb = new StringBuilder();
+        private static string ReadCString(Stream stream, int maxLength = int.MaxValue) {
+            var sb = new StringBuilder();
             int v, c = 0;
             do {
                 v = stream.ReadByte();

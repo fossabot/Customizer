@@ -16,20 +16,18 @@ namespace CustomNavi.Content {
         /// <summary>
         /// Deserialize content definition from json or binary
         /// </summary>
-        /// <param name="stream">Strema to read from</param>
+        /// <param name="stream">Stream to read from</param>
         /// <param name="json">If true, deserialize from json</param>
         /// <returns>Deserialized definition</returns>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
         public static ContentDefinition DeserializeContentDefinition(Stream stream, bool json = true) {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-            if (json) {
-                var ms = new MemoryStream();
+            if (!json) return Serializer.Deserialize<ContentDefinition>(stream);
+            using (var ms = new MemoryStream()) {
                 stream.CopyTo(ms);
                 return JsonSerializer.Deserialize<ContentDefinition>(ms.ToArray());
             }
-
-            return Serializer.Deserialize<ContentDefinition>(stream);
         }
 
         /// <summary>

@@ -246,7 +246,7 @@ namespace CNATool {
             Directory.CreateDirectory(options.TargetDir);
             ContentDefinition cd;
             using (var ifs = new FileStream(options.ContentDefinition, FileMode.Open, FileAccess.Read)) {
-                cd = Serializer.Deserialize<ContentDefinition>(ifs);
+                cd = ContentUtil.DeserializeJsonContentDefinition(ifs);
             }
 
             var rm = new ResourceManager();

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CustomNavi.Utility {
     public class FileResourceProvider : IResourceProvider {
-        private string _basePath;
+        private readonly string _basePath;
 
         public FileResourceProvider(string basePath) {
             if (basePath == null)

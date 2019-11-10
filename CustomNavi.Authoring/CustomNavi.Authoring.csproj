@@ -9,6 +9,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>Copyright ©2019 ryuuguze</Copyright>
     <RepositoryUrl>https://github.com/ryuuguze/CustomNavi</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>

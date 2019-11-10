@@ -166,6 +166,10 @@ namespace CustomNavi.Content {
 
         public static Image<Rgba32> CoalesceTexture(Dictionary<string, Image<Rgba32>> textures,
             CoTextureDefinition definition, Size targetSize) {
+            if (textures == null)
+                throw new ArgumentNullException(nameof(textures));
+            if (definition == null)
+                throw new ArgumentNullException(nameof(definition));
             var target = new Image<Rgba32>(targetSize.Width, targetSize.Height);
             // Iterate over sub-textures
             foreach (var curSub in definition.Textures) {

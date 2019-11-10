@@ -53,4 +53,3 @@ This command-line program provides some utilities:
 ## TO-DO
 
 * Add live content manipulation (add/update/remove texture/mesh)
-* Add content packing structure and utility

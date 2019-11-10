@@ -11,16 +11,18 @@ using CustomNavi.Content;
 using CustomNavi.Modeling;
 using CustomNavi.Texturing;
 using CustomNavi.Utility;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace CNATool {
     internal static class Program {
         private static int Main(string[] args) => Parser.Default
-            .ParseArguments<TemplateOptions, MakeMeshOptions, PackOptions, UnpackOptions>(args)
+            .ParseArguments<TemplateOptions, MakeMeshOptions, PackOptions, UnpackOptions, CompositeOptions>(args)
             .MapResult(
                 (TemplateOptions opts) => RunTemplate(opts),
                 (MakeMeshOptions opts) => RunMakeMesh(opts),
                 (PackOptions opts) => RunPack(opts),
                 (UnpackOptions opts) => RunUnpack(opts),
+                (CompositeOptions opts) => RunComposite(opts),
                 errs => 1);
 
         [Verb("template", HelpText = "Generate template ContentDefinition json.")]
@@ -207,6 +209,56 @@ namespace CNATool {
                     using (var resFs = new FileStream(Path.Combine(options.TargetDir, name), FileMode.Create,
                         FileAccess.Write))
                         srcResFs.CopyTo(resFs);
+            }
+
+            return 0;
+        }
+
+        [Verb("composite", HelpText = "Generate composite images from content definition.")]
+        private class CompositeOptions {
+            [Value(0, MetaName = "contentDefinition", Required = true,
+                HelpText = "Source json content definition to read.")]
+            public string ContentDefinition { get; set; }
+
+            [Value(1, MetaName = "targetDir", Required = true, HelpText = "Target directory.")]
+            public string TargetDir { get; set; }
+
+            [Option('d', "directory", Required = false, MetaValue = "DIRECTORY",
+                HelpText = "Custom content directory to use.")]
+            public string ContentDir { get; set; }
+
+            [Usage]
+            // ReSharper disable once UnusedMember.Local
+            public static IEnumerable<Example> Examples =>
+                new List<Example> {
+                    new Example("Generate composite images from content definition",
+                        new CompositeOptions {
+                            ContentDefinition = "<sourceFile>", TargetDir = "<targetDir>"
+                        }),
+                    new Example("Generate composite images from content definition from specified directory",
+                        new CompositeOptions {
+                            ContentDefinition = "<sourceFile>", TargetDir = "<targetDir>", ContentDir = "<contentDir>"
+                        })
+                };
+        }
+
+        private static int RunComposite(CompositeOptions options) {
+            Directory.CreateDirectory(options.TargetDir);
+            ContentDefinition cd;
+            using (var ifs = new FileStream(options.ContentDefinition, FileMode.Open, FileAccess.Read)) {
+                cd = Serializer.Deserialize<ContentDefinition>(ifs);
+            }
+
+            var rm = new ResourceManager();
+            rm.RegisterResourceProvider(
+                new FileResourceProvider(options.ContentDir ?? Path.GetDirectoryName(options.ContentDefinition)));
+            var opts = new LiveLoadOptions(loadTextures: true);
+            var lc = ContentUtil.LoadLiveContent(cd, rm, opts);
+            var pngEncoder = new PngEncoder();
+            foreach (var (name, image) in lc.RenderedCoTextures) {
+                using (var ofs = new FileStream(Path.Combine(options.TargetDir, name + ".png"), FileMode.Create,
+                    FileAccess.Write))
+                    image.Save(ofs, pngEncoder);
             }
 
             return 0;

@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>riina</Authors>
+    <Description>
+</Description>
+    <Copyright>Copyright ©2019 ryuuguze</Copyright>
+    <PackageProjectUrl></PackageProjectUrl>
+    <Company>ryuuguze</Company>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <PackOnBuild>true</PackOnBuild>
+    <Owners>riina</Owners>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/ryuuguze/CustomNavi</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -43,17 +43,18 @@ namespace CustomNavi {
         }
 
         internal static string ReadCString(this Stream stream, int maxLength = int.MaxValue) {
-            var ms = new MemoryStream();
-            int v, c = 0;
-            do {
-                v = stream.ReadByte();
-                if (v != -1 && v != 0)
-                    ms.WriteByte((byte) v);
-                c++;
-            } while (v != -1 && v != 0 && c < maxLength);
+            using (var ms = new MemoryStream()) {
+                int v, c = 0;
+                do {
+                    v = stream.ReadByte();
+                    if (v != -1 && v != 0)
+                        ms.WriteByte((byte) v);
+                    c++;
+                } while (v != -1 && v != 0 && c < maxLength);
 
-            var str = Encoding.UTF8.GetString(ms.ToArray());
-            return str;
+                var str = Encoding.UTF8.GetString(ms.ToArray());
+                return str;
+            }
         }
 
         internal static short ReadS16(this Stream stream)

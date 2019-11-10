@@ -36,20 +36,21 @@ namespace CustomNavi.Utility {
             if ("builtin".Equals(uri.Host, StringComparison.InvariantCultureIgnoreCase)) {
                 var res = typeof(ResourceManager).Assembly.GetManifestResourceStream(uri.AbsolutePath);
                 if (res != null)
-                    return "deflate".Equals(uri.Scheme, StringComparison.InvariantCultureIgnoreCase)
-                        ? new DeflateStream(res, CompressionMode.Decompress)
-                        : res;
+                    return GetModifiedStream(res, uri);
             }
 
             foreach (var provider in _providers) {
                 var res = provider.GetStream(uri);
                 if (res != null)
-                    return "deflate".Equals(uri.Scheme, StringComparison.InvariantCultureIgnoreCase)
-                        ? new DeflateStream(res, CompressionMode.Decompress)
-                        : res;
+                    return GetModifiedStream(res, uri);
             }
 
             return null;
         }
+
+        private static Stream GetModifiedStream(Stream stream, Uri uri) =>
+            "deflate".Equals(uri.Scheme, StringComparison.InvariantCultureIgnoreCase)
+                ? new DeflateStream(stream, CompressionMode.Decompress)
+                : stream;
     }
 }

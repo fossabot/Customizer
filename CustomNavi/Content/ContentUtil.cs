@@ -55,6 +55,8 @@ namespace CustomNavi.Content {
         /// <exception cref="ArgumentNullException"><paramref name="definition"/> or <paramref name="resourceManager"/> are null</exception>
         /// <exception cref="Exception"></exception>
         // ReSharper disable once UnusedMember.Global
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+            "CA2000: DisposeObjectsBeforeLosingScope", Justification = "<Pending>")]
         public static LiveContent LoadLiveContent(ContentDefinition definition, ResourceManager resourceManager,
             LiveLoadOptions opts, CacheManager cacheManager = null) {
             if (definition == null)
@@ -65,102 +67,110 @@ namespace CustomNavi.Content {
 
             // Load meshes
             var meshes = new Dictionary<string, LiveMesh>();
-            foreach (var e in definition.MeshPaths) {
-                var path = new Uri(e.Value);
-                LiveMesh mesh;
-                if (!opts.UseMeshCache || (mesh = cacheManager?.GetMesh(path.AbsolutePath)) == null) {
-                    using (var stream = resourceManager.GetStream(path))
-                        mesh = Serializer.Deserialize<LiveMesh>(stream);
+            if (opts.LoadMeshes) {
+                foreach (var e in definition.MeshPaths) {
+                    var path = new Uri(e.Value);
+                    LiveMesh mesh;
+                    if (!opts.UseMeshCache || (mesh = cacheManager?.GetMesh(path.AbsolutePath)) == null) {
+                        using (var stream = resourceManager.GetStream(path))
+                            mesh = Serializer.Deserialize<LiveMesh>(stream);
 
-                    if (opts.UseMeshCache)
-                        cacheManager?.AddMesh(path.AbsolutePath, mesh);
+                        if (opts.UseMeshCache)
+                            cacheManager?.AddMesh(path.AbsolutePath, mesh);
+                    }
+
+                    meshes.Add(e.Key, mesh);
                 }
-
-                meshes.Add(e.Key, mesh);
             }
 
             // Load textures
             var baseTextures = new Dictionary<string, Image<Rgba32>>();
             var renderedCoTextures = new Dictionary<string, Image<Rgba32>>();
-            foreach (var e in definition.TexturePaths) {
-                var path = new Uri(e.Value);
-                Image<Rgba32> tex;
-                if (!opts.UseTextureCache || (tex = cacheManager?.GetTexture(path.AbsolutePath)) == null) {
-                    using (var stream = resourceManager.GetStream(path))
-                        tex = Image.Load<Rgba32>(stream);
-                    if (opts.UseTextureCache)
-                        cacheManager?.AddTexture(path.AbsolutePath, tex);
+            if (opts.LoadTextures) {
+                foreach (var e in definition.TexturePaths) {
+                    var path = new Uri(e.Value);
+                    Image<Rgba32> tex;
+                    if (!opts.UseTextureCache || (tex = cacheManager?.GetTexture(path.AbsolutePath)) == null) {
+                        using (var stream = resourceManager.GetStream(path))
+                            tex = Image.Load<Rgba32>(stream);
+                        if (opts.UseTextureCache)
+                            cacheManager?.AddTexture(path.AbsolutePath, tex);
+                    }
+
+                    baseTextures.Add(e.Key, tex);
                 }
 
-                baseTextures.Add(e.Key, tex);
-            }
-
-            var maxSize = opts.MaxCoTextureSize;
-            if (maxSize.Height == 0 || maxSize.Height == 0)
-                maxSize = Defaults.Size;
-            // Iterate over rendered coalesced textures
-            foreach (var e in definition.CoTextures) {
-                var conf = e.Value;
-                var target = new Image<Rgba32>(Math.Min(conf.Width, maxSize.Width),
-                    Math.Min(conf.Height, maxSize.Height));
-                renderedCoTextures.Add(e.Key, target);
-                // Iterate over sub-textures
-                foreach (var curSub in conf.Textures) {
-                    var curSrc = baseTextures[curSub.Texture];
-                    var cur = curSub.Mask != null
-                        ? baseTextures[curSub.Mask].Clone(x => x
-                            .Resize(curSrc.Size())
-                            .DrawImage(curSrc,
-                                new GraphicsOptions {AlphaCompositionMode = PixelAlphaCompositionMode.SrcIn})
-                            .Resize(target.Size())
-                        )
-                        : curSrc.Clone(x => x
-                            .Resize(target.Size())
-                        );
-                    try {
-                        // ReSharper disable once AccessToDisposedClosure
-                        target.Mutate(x => x.DrawImage(cur, 1.0f));
-                    }
-                    finally {
-                        cur?.Dispose();
+                var maxSize = opts.MaxCoTextureSize;
+                if (maxSize.Height == 0 || maxSize.Height == 0)
+                    maxSize = Defaults.Size;
+                // Iterate over rendered coalesced textures
+                foreach (var e in definition.CoTextures) {
+                    var conf = e.Value;
+                    var target = new Image<Rgba32>(Math.Min(conf.Width, maxSize.Width),
+                        Math.Min(conf.Height, maxSize.Height));
+                    renderedCoTextures.Add(e.Key, target);
+                    // Iterate over sub-textures
+                    foreach (var curSub in conf.Textures) {
+                        var curSrc = baseTextures[curSub.Texture];
+                        var cur = curSub.Mask != null
+                            ? baseTextures[curSub.Mask].Clone(x => x
+                                .Resize(curSrc.Size())
+                                .DrawImage(curSrc,
+                                    new GraphicsOptions {AlphaCompositionMode = PixelAlphaCompositionMode.SrcIn})
+                                .Resize(target.Size())
+                            )
+                            : curSrc.Clone(x => x
+                                .Resize(target.Size())
+                            );
+                        try {
+                            // ReSharper disable once AccessToDisposedClosure
+                            target.Mutate(x => x.DrawImage(cur, 1.0f));
+                        }
+                        finally {
+                            cur?.Dispose();
+                        }
                     }
                 }
             }
 
             // Load resources
             var resources = new Dictionary<string, byte[]>();
-            foreach (var e in definition.ResourcePaths) {
-                var path = new Uri(e.Value);
-                byte[] resource;
-                if (!opts.UseResourceCache || (resource = cacheManager?.GetResource(path.AbsolutePath)) == null) {
-                    using (var stream = resourceManager.GetStream(path))
-                    using (var ms = new MemoryStream()) {
-                        stream.CopyTo(ms);
-                        resource = ms.ToArray();
+            if (opts.LoadResources) {
+                foreach (var e in definition.ResourcePaths) {
+                    var path = new Uri(e.Value);
+                    byte[] resource;
+                    if (!opts.UseResourceCache || (resource = cacheManager?.GetResource(path.AbsolutePath)) == null) {
+                        using (var stream = resourceManager.GetStream(path))
+                        using (var ms = new MemoryStream()) {
+                            stream.CopyTo(ms);
+                            resource = ms.ToArray();
+                        }
+
+                        if (opts.UseResourceCache)
+                            cacheManager?.AddResource(path.AbsolutePath, resource);
                     }
 
-                    if (opts.UseResourceCache)
-                        cacheManager?.AddResource(path.AbsolutePath, resource);
+                    resources.Add(e.Key, resource);
                 }
-
-                resources.Add(e.Key, resource);
             }
 
             // Load translations
             var translations = new Dictionary<string, Dictionary<string, string>>();
-            foreach (var e in definition.TranslationPaths) {
-                var path = new Uri(e.Value);
-                Dictionary<string, string> translation;
-                if (!opts.UseTranslationCache ||
-                    (translation = cacheManager?.GetTranslation(path.AbsolutePath)) == null) {
-                    using (var stream = resourceManager.GetStream(path))
-                        translation = Serializer.Deserialize<Dictionary<string, string>>(stream);
+            if (opts.LoadTranslations) {
+                foreach (var e in definition.TranslationPaths) {
+                    var path = new Uri(e.Value);
+                    Dictionary<string, string> translation;
+                    if (!opts.UseTranslationCache ||
+                        (translation = cacheManager?.GetTranslation(path.AbsolutePath)) == null) {
+                        using (var stream = resourceManager.GetStream(path))
+                            translation = Serializer.Deserialize<Dictionary<string, string>>(stream);
 
-                    if (opts.UseTranslationCache)
-                        cacheManager?.AddTranslation(path.AbsolutePath, translation);
+                        if (opts.UseTranslationCache)
+                            cacheManager?.AddTranslation(path.AbsolutePath, translation);
+                    }
+
+                    translations.Add(e.Key, translation);
                 }
-
-                translations.Add(e.Key, translation);
             }
 
             return new LiveContent {

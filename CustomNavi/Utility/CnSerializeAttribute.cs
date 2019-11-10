@@ -5,8 +5,8 @@ namespace CustomNavi.Utility {
     /// Serialize member
     /// </summary>
     [AttributeUsageAttribute(AttributeTargets.Field | AttributeTargets.Property)]
-    public sealed class NSerializeAttribute : Attribute {
-        public NSerializeAttribute(int tag) {
+    public sealed class CnSerializeAttribute : Attribute {
+        public CnSerializeAttribute(int tag) {
             Tag = tag;
         }
 

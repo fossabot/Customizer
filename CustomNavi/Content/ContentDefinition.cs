@@ -10,19 +10,19 @@ namespace CustomNavi.Content {
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
-    [NCustomSerializeMembers]
+    [CnCustomSerializeMembers]
     public class ContentDefinition : ICloneable {
-        [NSerialize(0)] public Dictionary<string, string> MeshPaths { get; set; } = new Dictionary<string, string>();
-        [NSerialize(1)] public Dictionary<string, string> TexturePaths { get; set; } = new Dictionary<string, string>();
-        [NSerialize(2)] public Dictionary<string, string> ResourcePaths { get; set; } = new Dictionary<string, string>();
+        [CnSerialize(0)] public Dictionary<string, string> MeshPaths { get; set; } = new Dictionary<string, string>();
+        [CnSerialize(1)] public Dictionary<string, string> TexturePaths { get; set; } = new Dictionary<string, string>();
+        [CnSerialize(2)] public Dictionary<string, string> ResourcePaths { get; set; } = new Dictionary<string, string>();
 
-        [NSerialize(3)]
+        [CnSerialize(3)]
         public Dictionary<string, string> TranslationPaths { get; set; } = new Dictionary<string, string>();
 
-        [NSerialize(4)]
+        [CnSerialize(4)]
         public Dictionary<string, MeshConfig> MeshConfigs { get; set; } = new Dictionary<string, MeshConfig>();
 
-        [NSerialize(5)]
+        [CnSerialize(5)]
         public Dictionary<string, CoTextureDefinition> CoTextures { get; set; } =
             new Dictionary<string, CoTextureDefinition>();
 

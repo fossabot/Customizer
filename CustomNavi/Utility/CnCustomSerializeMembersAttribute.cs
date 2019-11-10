@@ -5,6 +5,6 @@ namespace CustomNavi.Utility {
     /// Use custom serialization on members
     /// </summary>
     [AttributeUsageAttribute(AttributeTargets.Class | AttributeTargets.Struct)]
-    public sealed class NCustomSerializeMembersAttribute : Attribute {
+    public sealed class CnCustomSerializeMembersAttribute : Attribute {
     }
 }

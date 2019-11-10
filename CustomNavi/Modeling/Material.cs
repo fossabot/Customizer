@@ -5,9 +5,9 @@ using CustomNavi.Utility;
 namespace CustomNavi.Modeling {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
-    [NCustomSerializeMembers]
+    [CnCustomSerializeMembers]
     public class Material : ICloneable {
-        [NSerialize(0)] public Dictionary<string, string> CoTextures { get; set; } = new Dictionary<string, string>();
+        [CnSerialize(0)] public Dictionary<string, string> CoTextures { get; set; } = new Dictionary<string, string>();
 
         public object Clone() {
             var res = new Material();

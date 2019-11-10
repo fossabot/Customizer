@@ -11,6 +11,16 @@ namespace CustomNavi.Test {
         }
 
         [Test]
+        public void TestSerializeText() {
+            const string str = "VS.ネビュラグレイ";
+            var ms = new MemoryStream();
+            Serializer.Serialize(ms, str);
+            ms.Position = 0;
+            var str2 = Serializer.Deserialize<string>(ms);
+            Assert.AreEqual(str, str2);
+        }
+
+        [Test]
         public void TestSerializeNormal() {
             var ms = new MemoryStream();
             var y = new A {
@@ -115,32 +125,32 @@ namespace CustomNavi.Test {
             Assert.AreEqual(y.v.Z, z.v.Z, "struct z check fail");
         }
 
-        [NCustomSerializeMembers]
+        [CnCustomSerializeMembers]
         private class X {
-            [NSerialize(0)] public int w;
-            [NSerialize(1)] public int H { get; set; }
+            [CnSerialize(0)] public int w;
+            [CnSerialize(1)] public int H { get; set; }
 
-            [NSerialize(2)] public byte[] a;
-            [NSerialize(3)] public List<string> l;
-            [NSerialize(4)] public Dictionary<string, string> d;
-            [NSerialize(5)] public E e;
-            [NSerialize(6)] public Vector3 v;
+            [CnSerialize(2)] public byte[] a;
+            [CnSerialize(3)] public List<string> l;
+            [CnSerialize(4)] public Dictionary<string, string> d;
+            [CnSerialize(5)] public E e;
+            [CnSerialize(6)] public Vector3 v;
         }
 
-        [NCustomSerializeMembers]
+        [CnCustomSerializeMembers]
         private class Xe {
 #pragma warning disable 649
-            [NSerialize(0)] public int w;
+            [CnSerialize(0)] public int w;
 
             // ReSharper disable once UnusedAutoPropertyAccessor.Local
-            [NSerialize(1)] public int H { get; set; }
+            [CnSerialize(1)] public int H { get; set; }
 
-            [NSerialize(2)] public byte[] a;
-            [NSerialize(3)] public List<string> l;
-            [NSerialize(4)] public Dictionary<string, string> d;
-            [NSerialize(5)] public E e;
-            [NSerialize(6)] public Vector3 v;
-            [NSerialize(7)] public Vector3 v2;
+            [CnSerialize(2)] public byte[] a;
+            [CnSerialize(3)] public List<string> l;
+            [CnSerialize(4)] public Dictionary<string, string> d;
+            [CnSerialize(5)] public E e;
+            [CnSerialize(6)] public Vector3 v;
+            [CnSerialize(7)] public Vector3 v2;
 #pragma warning restore 649
         }
 

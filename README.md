@@ -27,12 +27,9 @@ This command-line program provides some utilities:
 * Template
   - Generate template ContentDefinition json
   - Usage: `CNATool template <targetFile>`
-* BinDef
-  - Generate binary-serialized ContentDefinition from json
-  - Usage: `CNATool bindef <sourceFile> <targetFile>`
-* LiveMesh
+* MakeMesh
   - Generate binary-serialized LiveMesh from FBX
-  - Usage: `CNATool livemesh <sourceFile> <targetFile> [-m|--matchFile FILE]`
+  - Usage: `CNATool makemesh <sourceFile> <targetFile> [-m|--matchFile FILE]`
     - matchFile is a JSON text file for assigning bone / attach point types to bones that follows this structure:
     ```
     {
@@ -44,7 +41,12 @@ This command-line program provides some utilities:
         }
     }
     ```
-
+* Pack
+  - Write CnBox container
+  - Usage: `CNATool pack [-d|--definition <targetFile>] <contentDefinition> [resources...]`
+* Unpack
+  - Unpack CnBox container
+  - Usage: `CNATool unpack <sourceFile> <targetDir>`
 ## TO-DO
 
 * Add live content manipulation (add/update/remove texture/mesh)

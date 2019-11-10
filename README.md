@@ -50,6 +50,3 @@ This command-line program provides some utilities:
 * Composite
   - Generate composite images from content definition
   - Usage: `CNATool composite [-d|--directory <DIRECTORY>] <contentDefinition> <targetDir>`
-## TO-DO
-
-* Add live content manipulation (add/update/remove texture/mesh)

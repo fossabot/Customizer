@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using CustomNavi.Modeling;
+using CustomNavi.Texturing;
 using CustomNavi.Utility;
+using SixLabors.Primitives;
 
 namespace CustomNavi.Content {
     /// <summary>
@@ -105,31 +107,10 @@ namespace CustomNavi.Content {
                     maxSize = Defaults.Size;
                 // Iterate over rendered coalesced textures
                 foreach (var e in definition.CoTextures) {
-                    var conf = e.Value;
-                    var target = new Image<Rgba32>(Math.Min(conf.Width, maxSize.Width),
-                        Math.Min(conf.Height, maxSize.Height));
-                    renderedCoTextures.Add(e.Key, target);
-                    // Iterate over sub-textures
-                    foreach (var curSub in conf.Textures) {
-                        var curSrc = baseTextures[curSub.Texture];
-                        var cur = curSub.Mask != null
-                            ? baseTextures[curSub.Mask].Clone(x => x
-                                .Resize(curSrc.Size())
-                                .DrawImage(curSrc,
-                                    new GraphicsOptions {AlphaCompositionMode = PixelAlphaCompositionMode.SrcIn})
-                                .Resize(target.Size())
-                            )
-                            : curSrc.Clone(x => x
-                                .Resize(target.Size())
-                            );
-                        try {
-                            // ReSharper disable once AccessToDisposedClosure
-                            target.Mutate(x => x.DrawImage(cur, 1.0f));
-                        }
-                        finally {
-                            cur?.Dispose();
-                        }
-                    }
+                    renderedCoTextures.Add(e.Key,
+                        CoalesceTexture(baseTextures, e.Value,
+                            new Size(Math.Min(e.Value.Width, maxSize.Width),
+                                Math.Min(e.Value.Height, maxSize.Height))));
                 }
             }
 
@@ -181,6 +162,34 @@ namespace CustomNavi.Content {
                 Resources = resources,
                 Translations = translations
             };
+        }
+
+        public static Image<Rgba32> CoalesceTexture(Dictionary<string, Image<Rgba32>> textures,
+            CoTextureDefinition definition, Size targetSize) {
+            var target = new Image<Rgba32>(targetSize.Width, targetSize.Height);
+            // Iterate over sub-textures
+            foreach (var curSub in definition.Textures) {
+                var curSrc = textures[curSub.Texture];
+                var cur = curSub.Mask != null
+                    ? textures[curSub.Mask].Clone(x => x
+                        .Resize(curSrc.Size())
+                        .DrawImage(curSrc,
+                            new GraphicsOptions {AlphaCompositionMode = PixelAlphaCompositionMode.SrcIn})
+                        .Resize(target.Size())
+                    )
+                    : curSrc.Clone(x => x
+                        .Resize(target.Size())
+                    );
+                try {
+                    // ReSharper disable once AccessToDisposedClosure
+                    target.Mutate(x => x.DrawImage(cur, 1.0f));
+                }
+                finally {
+                    cur?.Dispose();
+                }
+            }
+
+            return target;
         }
     }
 }

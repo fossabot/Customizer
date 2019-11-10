@@ -57,7 +57,7 @@ namespace CNATool {
                 Height = 1024,
                 Width = 1024,
                 Textures = new List<SubTextureDefinition>
-                    {new SubTextureDefinition {Mask = "(coTextureName)", Texture = "(coTextureName)"}}
+                    {new SubTextureDefinition {Mask = "(textureName)", Texture = "(textureName)"}}
             });
             using (var ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write))
                 ContentUtil.SerializeJsonContentDefinition(def, ofs);

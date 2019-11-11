@@ -1,5 +1,5 @@
 ﻿$genver = ( Select-Xml -Path "$PSScriptRoot\CzTool\CzTool.csproj" -XPath //Project/PropertyGroup/AssemblyVersion ).Node.InnerText
-$targets_os = "osx-x64"
+$targets_os = "win-x64", "win-x86", "linux-x64", "osx-x64"
 $targets_conf = "Debug", "Release"
 $targets_sc = [ordered]@{
     Standalone = "true";

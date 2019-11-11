@@ -77,7 +77,7 @@ Generate deflate compressed LiveMesh from FBX
 
 Usage: `CNATool makemesh <sourceFile> <targetFile> [-m|--matchFile FILE]`
 
-matchFile is a JSON text file for assigning bone / attach point types to bones that follows this structure:
+matchFile is a JSON text file for assigning [bone](CustomNavi/Modeling/BoneType.cs) / [attach point](CustomNavi/Modeling/AttachPointType.cs) types to bones that follows this structure:
 
 ```json
 {

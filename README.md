@@ -1,6 +1,11 @@
 # Customizer
 ### Custom content consumption library
 
+| Package                | Release |
+|------------------------|---------|
+| `Customizer`           | [![NuGet](https://img.shields.io/nuget/v/Customizer.svg)](https://www.nuget.org/packages/Customizer/) |
+| `Customizer.Authoring` | [![NuGet](https://img.shields.io/nuget/v/Customizer.Authoring.svg)](https://www.nuget.org/packages/Customizer.Authoring/) |
+
 This library is meant to provide a basic common custom content consumption platform.
 
 Given a standard set of resources and additional user data, users either write JSON text or use external tools to generate definitions referencing named resources by path and defining properties (e.g. custom armor attach points and layered texture generation) that can then be loaded into shared formats for consumption by other libraries.

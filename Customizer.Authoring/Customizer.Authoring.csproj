@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <Authors>riina</Authors>
+    <Company>teamRokuro</Company>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>Copyright ©2019 teamRokuro</Copyright>
+    <RepositoryUrl>https://github.com/ryuuguze/Customizer</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Description>Custom content format conversion library</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AssimpNet" Version="4.1.0" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Customizer\Customizer.csproj" />
+  </ItemGroup>
+</Project>

@@ -2,11 +2,25 @@
 using System.Collections.Generic;
 
 namespace CustomNavi.Texturing {
+    /// <summary>
+    /// Definition for composite texture
+    /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
     public class CoTextureDefinition : ICloneable {
+        /// <summary>
+        /// Preferred width of texture
+        /// </summary>
         public int Width { get; set; }
+
+        /// <summary>
+        /// Preferred height of texture
+        /// </summary>
         public int Height { get; set; }
+
+        /// <summary>
+        /// Component textures
+        /// </summary>
         public List<SubTextureDefinition> Textures { get; set; } = new List<SubTextureDefinition>();
 
         public object Clone() {

@@ -6,6 +6,10 @@ namespace CustomNavi.Utility {
     /// </summary>
     [AttributeUsageAttribute(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class CnSerializeAttribute : Attribute {
+        /// <summary>
+        /// Serialize member
+        /// </summary>
+        /// <param name="tag">Identifier tag</param>
         public CnSerializeAttribute(int tag) {
             Tag = tag;
         }

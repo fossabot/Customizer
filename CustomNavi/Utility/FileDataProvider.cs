@@ -2,10 +2,13 @@ using System;
 using System.IO;
 
 namespace CustomNavi.Utility {
-    public class FileResourceProvider : IResourceProvider {
+    /// <summary>
+    /// Resource provider based on files in directory
+    /// </summary>
+    public class FileDataProvider : IDataProvider {
         private readonly string _basePath;
 
-        public FileResourceProvider(string basePath) {
+        public FileDataProvider(string basePath) {
             if (basePath == null)
                 throw new ArgumentNullException(nameof(basePath));
             _basePath = basePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);

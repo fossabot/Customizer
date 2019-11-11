@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Assimp;
 using CustomNavi.Modeling;
@@ -9,25 +11,38 @@ using Bone = Assimp.Bone;
 using Matrix4x4 = System.Numerics.Matrix4x4;
 
 namespace CustomNavi.Authoring {
+    /// <summary>
+    /// Utility class for content authoring
+    /// </summary>
     public static class AuthoringUtil {
-        public static LiveMesh GenerateLiveMesh(Stream stream, List<Tuple<BoneType, string>> boneRegexs = null,
-            List<Tuple<AttachPointType, string>> attachPointRegexs = null) {
+        /// <summary>
+        /// Generate LiveMesh instance from FBX data stream
+        /// </summary>
+        /// <param name="stream">FBX data to read</param>
+        /// <param name="boneRegexs">Optional bone regex mappings</param>
+        /// <param name="attachPointRegexs">Optional attach point regex mappings</param>
+        /// <returns>LiveMesh instance</returns>
+        public static LiveMesh GenerateLiveMesh(Stream stream, Dictionary<string, BoneType> boneRegexs = null,
+            Dictionary<string, AttachPointType> attachPointRegexs = null) {
             Scene scene;
+            // API goes into native code to load FBX
             using (var ctx = new AssimpContext())
                 scene = ctx.ImportFileFromStream(stream, PostProcessSteps.Triangulate, "fbx");
             var bones = new List<Bone>();
             var mBones = new List<Modeling.Bone>();
             var attachPoints = new List<AttachPoint>();
             var subMeshes = new LiveSubMesh[scene.MeshCount];
+            // Load sub-meshes
             for (var iSubMesh = 0; iSubMesh < subMeshes.Length; iSubMesh++) {
-                // Define submesh
+                // Define sub-mesh
                 var subMesh = scene.Meshes[iSubMesh];
                 var vertices = new Vector3[subMesh.VertexCount];
                 var uvs = new Vector2[subMesh.VertexCount];
                 var normals = new Vector3[subMesh.VertexCount];
                 var weights = new BoneWeight[subMesh.VertexCount];
                 var triangles = new int[subMesh.FaceCount * 3];
-                var mSubMesh = subMeshes[iSubMesh] = new LiveSubMesh { Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles };
+                var mSubMesh = subMeshes[iSubMesh] = new LiveSubMesh
+                    {Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles};
                 // Get vertices
                 for (var iVertex = 0; iVertex < vertices.Length; iVertex++)
                     vertices[iVertex] = subMesh.Vertices[iVertex].ToVector3();
@@ -52,6 +67,7 @@ namespace CustomNavi.Authoring {
                         var weight = weights[vWeight.VertexID];
                         var bId = bones.IndexOf(bone);
                         var bWe = vWeight.Weight;
+                        // ReSharper disable once SwitchStatementMissingSomeCases
                         switch (weight.count) {
                             case 0:
                                 weight.bone1 = bId;
@@ -78,11 +94,11 @@ namespace CustomNavi.Authoring {
                     // Skip bone if already processed
                     if (bones.Contains(bone)) continue;
                     // Add bone
-                    var mBone = new Modeling.Bone { BoneName = bone.Name, BindPose = bone.OffsetMatrix.ToMatrix4x4() };
+                    var mBone = new Modeling.Bone {BoneName = bone.Name, BindPose = bone.OffsetMatrix.ToMatrix4x4()};
                     if (boneRegexs != null)
-                        foreach (var (item1, item2) in boneRegexs)
-                            if (Regex.IsMatch(bone.Name, item2)) {
-                                mBone.Type = item1;
+                        foreach (var entry in boneRegexs)
+                            if (Regex.IsMatch(bone.Name, entry.Key)) {
+                                mBone.Type = entry.Value;
                                 break;
                             }
 
@@ -90,12 +106,12 @@ namespace CustomNavi.Authoring {
                     mBones.Add(mBone);
                     // Add attach point if applicable
                     if (attachPointRegexs == null) continue;
-                    foreach (var (item1, item2) in attachPointRegexs)
-                        if (Regex.IsMatch(bone.Name, item2)) {
+                    foreach (var entry in attachPointRegexs)
+                        if (Regex.IsMatch(bone.Name, entry.Key)) {
                             attachPoints.Add(new AttachPoint {
                                 BoneName = bone.Name,
                                 BindPose = bone.OffsetMatrix.ToMatrix4x4Array(),
-                                Type = item1
+                                Type = entry.Value
                             });
                             break;
                         }
@@ -107,6 +123,41 @@ namespace CustomNavi.Authoring {
                 DefaultAttachPoints = attachPoints.ToArray(),
                 SubMeshes = subMeshes
             };
+        }
+
+        /// <summary>
+        /// Deserialize object from JSON stream
+        /// </summary>
+        /// <param name="stream">Stream to read from</param>
+        /// <returns>Deserialized object</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
+        public static T JsonDeserialize<T>(Stream stream) {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            using (var ms = new MemoryStream()) {
+                stream.CopyTo(ms);
+                var opts = new JsonSerializerOptions();
+                opts.Converters.Add(new JsonStringEnumConverter());
+                return JsonSerializer.Deserialize<T>(ms.ToArray(), opts);
+            }
+        }
+
+        /// <summary>
+        /// Serialize object to JSON stream
+        /// </summary>
+        /// <param name="value">Definition to serialize</param>
+        /// <param name="stream">Stream to write to</param>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> or <paramref name="stream"/> are null</exception>
+        public static void JsonSerialize(object value, Stream stream) {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            var opts = new JsonSerializerOptions {WriteIndented = true};
+            opts.Converters.Add(new JsonStringEnumConverter());
+            using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions {Indented = true})) {
+                JsonSerializer.Serialize(writer, value, opts);
+            }
         }
 
         private static Vector2 ToVector2(this Vector3D vector)

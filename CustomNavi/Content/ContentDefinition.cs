@@ -6,25 +6,54 @@ using CustomNavi.Utility;
 
 namespace CustomNavi.Content {
     /// <summary>
-    /// Stores content locations and metadata
+    /// Stores content locations and metadata for a content unit
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
     [CnCustomSerializeMembers]
     public class ContentDefinition : ICloneable {
-        [CnSerialize(0)] public Dictionary<string, string> MeshPaths { get; set; } = new Dictionary<string, string>();
-        [CnSerialize(1)] public Dictionary<string, string> TexturePaths { get; set; } = new Dictionary<string, string>();
-        [CnSerialize(2)] public Dictionary<string, string> ResourcePaths { get; set; } = new Dictionary<string, string>();
+        /// <summary>
+        /// Map of mesh names to URIs
+        /// </summary>
+        [CnSerialize(0)]
+        public Dictionary<string, string> MeshPaths { get; set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Map of texture names to URIs
+        /// </summary>
+        [CnSerialize(1)]
+        public Dictionary<string, string> TexturePaths { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Map of resource names to URIs
+        /// </summary>
+        [CnSerialize(2)]
+        public Dictionary<string, string> ResourcePaths { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Map of translation names to URIs
+        /// </summary>
         [CnSerialize(3)]
         public Dictionary<string, string> TranslationPaths { get; set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Map of mesh config names to URIs
+        /// </summary>
         [CnSerialize(4)]
         public Dictionary<string, MeshConfig> MeshConfigs { get; set; } = new Dictionary<string, MeshConfig>();
 
+        /// <summary>
+        /// Map of composite texture names to definitions
+        /// </summary>
         [CnSerialize(5)]
         public Dictionary<string, CoTextureDefinition> CoTextures { get; set; } =
             new Dictionary<string, CoTextureDefinition>();
+
+        /// <summary>
+        /// Main mesh for this content unit
+        /// </summary>
+        [CnSerialize(6)]
+        public string MainMesh { get; set; }
 
         public object Clone() {
             var res = new ContentDefinition();

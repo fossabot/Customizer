@@ -1,4 +1,7 @@
 ﻿namespace CustomNavi.Modeling {
+    /// <summary>
+    /// Defines common attach points
+    /// </summary>
     public enum AttachPointType {
         None,
 

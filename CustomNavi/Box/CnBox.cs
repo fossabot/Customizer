@@ -6,12 +6,22 @@ using CustomNavi.Content;
 using CustomNavi.Utility;
 
 namespace CustomNavi.Box {
+    /// <summary>
+    /// Base content container
+    /// </summary>
     public class CnBox {
         private Stream _stream;
         private ContentDefinition _contentDefinition;
         private Dictionary<string, Tuple<int, int>> _entries;
         private long _bOfs;
 
+        /// <summary>
+        /// Write container header information for given data to stream
+        /// </summary>
+        /// <param name="stream">Stream to write to</param>
+        /// <param name="contentDefinition">Content definition to serialize (can be null)</param>
+        /// <param name="entries">Entry information to serialize (can be null)</param>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
         public static void WriteHead(Stream stream, ContentDefinition contentDefinition,
             List<MutableKeyValuePair<string, int>> entries) {
             if (stream == null)
@@ -28,6 +38,12 @@ namespace CustomNavi.Box {
             }
         }
 
+        /// <summary>
+        /// Load container information from stream
+        /// </summary>
+        /// <param name="stream">Stream to read from</param>
+        /// <returns>Container object based on input stream</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
         public static CnBox Load(Stream stream) {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -41,44 +57,90 @@ namespace CustomNavi.Box {
                 var ofs = 0;
                 var list = Serializer.Deserialize<List<MutableKeyValuePair<string, int>>>(ds);
                 if (list != null)
-                    foreach (var entry in list) {
-                        res._entries.Add(entry.Item1, new Tuple<int, int>(ofs, entry.Item2));
-                        ofs += entry.Item2;
+                    foreach (var (offset, length) in list) {
+                        res._entries.Add(offset, new Tuple<int, int>(ofs, length));
+                        ofs += length;
                     }
             }
 
             return res;
         }
 
+        /// <summary>
+        /// Get ContentDefinition from container if it contains one
+        /// </summary>
+        /// <returns>ContentDefinition obtained from container or null</returns>
         public ContentDefinition GetContentDefinition()
-            => (ContentDefinition) _contentDefinition.Clone();
+            => (ContentDefinition) _contentDefinition?.Clone();
 
-        public IResourceProvider GetResourceProvider()
-            => new CnBoxResourceProvider(this);
+        /// <summary>
+        /// Load live data representation of content
+        /// </summary>
+        /// <param name="dataManager">Resource manager to load assets with</param>
+        /// <param name="opts">Loader options</param>
+        /// <param name="cacheManager">Optional content cache manager</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="dataManager"/> is null</exception>
+        /// <exception cref="InvalidOperationException">content definition was not loaded for this object</exception>
+        // ReSharper disable once UnusedMember.Global
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+            "CA2000: DisposeObjectsBeforeLosingScope", Justification = "<Pending>")]
+        public LiveContent LoadLiveContent(DataManager dataManager,
+            LiveLoadOptions opts, CacheManager cacheManager = null) {
+            if (_contentDefinition == null)
+                throw new InvalidOperationException();
+            if (dataManager == null)
+                throw new ArgumentNullException(nameof(dataManager));
+            var rp = GetResourceProvider();
+            dataManager.RegisterDataProvider(rp);
+            try {
+                return ContentUtil.LoadLiveContent(_contentDefinition, dataManager, opts, cacheManager);
+            }
+            finally {
+                dataManager.DeregisterDataProvider(rp);
+            }
+        }
 
-        public IEnumerable<Tuple<string, Stream>> GetResourceEnumerator() {
+        /// <summary>
+        /// Get <see cref="IDataProvider"/> to access this container's files
+        /// </summary>
+        /// <returns><see cref="IDataProvider"/> with this container's files</returns>
+        public IDataProvider GetResourceProvider()
+            => new CnBoxDataProvider(this);
+
+        /// <summary>
+        /// Get enumerator for this container's files
+        /// </summary>
+        /// <returns>Enumerator for this container's files</returns>
+        public IEnumerable<Tuple<string, Stream>> GetDataEnumerator() {
             foreach (var entry in _entries)
                 yield return new Tuple<string, Stream>(entry.Key,
                     new CnBoxSubStream(_stream, _bOfs + entry.Value.Item1, entry.Value.Item2));
         }
 
-        private class CnBoxResourceProvider : IResourceProvider {
+        /// <summary>
+        /// Resource provider based on <see cref="CnBox"/> instance
+        /// </summary>
+        private class CnBoxDataProvider : IDataProvider {
             private readonly CnBox _box;
 
-            internal CnBoxResourceProvider(CnBox box) {
+            internal CnBoxDataProvider(CnBox box) {
                 _box = box;
             }
 
             public Stream GetStream(Uri uri) {
                 if (uri == null)
                     throw new ArgumentNullException(nameof(uri));
-                if (!"cnbox".Equals(uri.Host, StringComparison.InvariantCultureIgnoreCase)) return null;
+                if (!"local".Equals(uri.Host, StringComparison.InvariantCultureIgnoreCase)) return null;
                 return _box._entries.TryGetValue(uri.AbsolutePath, out var res)
                     ? new CnBoxSubStream(_box._stream, _box._bOfs + res.Item1, res.Item2)
                     : null;
             }
         }
 
+        /// <summary>
+        /// Provides fixed-size read-only access to a <see cref="CnBox"/> container's file
+        /// </summary>
         private class CnBoxSubStream : Stream {
             private readonly Stream _stream;
             private readonly long _ofs;

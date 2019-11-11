@@ -1,4 +1,7 @@
 ﻿namespace CustomNavi.Modeling {
+    /// <summary>
+    /// Defines common humanoid bones
+    /// </summary>
     public enum BoneType {
         None = 0x0,
 

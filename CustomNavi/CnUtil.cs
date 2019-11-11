@@ -7,7 +7,7 @@ namespace CustomNavi {
     /// <summary>
     /// General utility functions
     /// </summary>
-    public static class CnUtil {
+    internal static class CnUtil {
         internal static long Read7B(this Stream stream, out int len) {
             long value = 0;
             len = 0;

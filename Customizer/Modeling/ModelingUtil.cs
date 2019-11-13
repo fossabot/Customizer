@@ -11,7 +11,7 @@ namespace Customizer.Modeling {
         /// <param name="options">Processing configuration</param>
         /// <returns>Newly allocated refit mesh</returns>
         public static LiveMesh Refit(LiveMesh baseVariant, LiveMesh targetVariant, LiveMesh sourceMesh,
-            RefitOptions options) {
+            RefitOptions? options = null) {
             if (baseVariant == null)
                 throw new ArgumentNullException(nameof(baseVariant));
             if (targetVariant == null)

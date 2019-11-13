@@ -96,6 +96,16 @@ namespace CzTool {
             [Option('m', "matchFile", MetaValue = "FILE", HelpText = "Use bone / attach point regex JSON file.")]
             public string MatchFile { get; set; } = null;
 
+            [Option('u', "uniqueName", MetaValue = "NAME", HelpText = "Set this mesh's unique name.")]
+            public string UniqueName { get; set; } = null;
+
+            [Option('v', "variantTypeName", MetaValue = "NAME", HelpText = "Set the base variant type name.")]
+            public string VariantTypeName { get; set; } = null;
+
+            [Option('f', "fitUniqueName", MetaValue = "NAME",
+                HelpText = "Set the unique name of the mesh originally fit against.")]
+            public string FitUniqueName { get; set; } = null;
+
             [Usage]
             // ReSharper disable once UnusedMember.Local
             public static IEnumerable<Example> Examples =>
@@ -120,6 +130,10 @@ namespace CzTool {
 
                 mesh = AuthoringUtil.GenerateLiveMesh(ifs, boneRegexs, attachPointRegexs);
             }
+
+            mesh.UniqueName = options.UniqueName;
+            mesh.VariantTypeName = options.VariantTypeName;
+            mesh.FitUniqueName = options.FitUniqueName;
 
             using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
                 CompressionLevel.Optimal, false))

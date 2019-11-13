@@ -1,4 +1,5 @@
-﻿using Customizer.Utility;
+﻿using System;
+using Customizer.Utility;
 
 namespace Customizer.Modeling {
     /// <summary>
@@ -8,7 +9,7 @@ namespace Customizer.Modeling {
         "CA1815:Override equals and operator equals on value types", Justification = "<Pending>")]
     [CzCustomSerializeMembers]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class AttachPoint {
+    public sealed class AttachPoint : ICloneable {
         /// <summary>
         /// Type of attach point this instance represents
         /// </summary>
@@ -28,5 +29,11 @@ namespace Customizer.Modeling {
             "CA1819:PropertiesShouldNotReturnArrays", Justification = "<Pending>")]
         [CzSerialize(2)]
         public float[] BindPose { get; set; } = new float[16];
+
+        public object Clone() {
+            var res = new AttachPoint {Type = Type, BoneName = BoneName};
+            Array.Copy(BindPose, res.BindPose, BindPose.Length);
+            return res;
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
 using System.Collections.Generic;
 using Customizer.Modeling;
 
@@ -10,7 +9,7 @@ namespace Customizer.Content {
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields",
         Justification = "<Pending>")]
-    public class LiveContent : IDisposable {
+    public sealed class LiveContent {
         /// <summary>
         /// Base content definition this instance was loaded from
         /// </summary>
@@ -147,30 +146,5 @@ namespace Customizer.Content {
             Definition.TranslationPaths.Remove(name);
             Translations.Remove(name);
         }
-
-        #region IDisposable Support
-
-        private bool _disposed; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing) {
-            if (_disposed) return;
-            Definition = null;
-            Meshes = null;
-            Textures = null;
-            RenderedCoTextures = null;
-            Resources = null;
-            Translations = null;
-
-            _disposed = true;
-        }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose() {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }

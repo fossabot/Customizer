@@ -7,7 +7,7 @@ namespace Customizer.Texturing {
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
-    public class CoTextureDefinition : ICloneable {
+    public sealed class CoTextureDefinition : ICloneable {
         /// <summary>
         /// Preferred width of texture
         /// </summary>

@@ -7,7 +7,7 @@ namespace Customizer.Utility {
     /// <summary>
     /// Content caching utility
     /// </summary>
-    public class CacheManager {
+    public sealed class CacheManager {
         private readonly Dictionary<string, LiveMesh> _meshes = new Dictionary<string, LiveMesh>();
         private readonly Dictionary<string, Image<Rgba32>> _textures = new Dictionary<string, Image<Rgba32>>();
         private readonly Dictionary<string, byte[]> _resources = new Dictionary<string, byte[]>();

@@ -9,7 +9,7 @@ namespace Customizer.Modeling {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
     [CzCustomSerializeMembers]
-    public class Material : ICloneable {
+    public sealed class Material : ICloneable {
         /// <summary>
         /// Material texture properties
         /// </summary>

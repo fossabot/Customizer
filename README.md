@@ -24,32 +24,33 @@ Provides base API and data structures for loading resources using a content defi
 ```csharp
 using Customizer.Box;
 using Customizer.Content;
-using Customizer.Modeling;
-using Customizer.Texturing;
 using Customizer.Utility;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
 
 public class SomeClass {
-  public void LoadAssets(string pathToCzBox, string someContentFolder){
-    var rm = new DataManager();
-    rm.RegisterDataProvider(
-      new FileDataProvider(someContentFolder));
-    var box = CzBox.Load(new FileInfo(pathToCzBox).OpenRead());
-    var content = box.LoadLiveContent(rm, Defaults.LiveLoadOptions);
-    foreach(var e in content.Meshes){
-      LiveMesh mesh = e.Value;
-      foreach(LiveSubMesh submesh in mesh.SubMeshes){
-        // Do something with each sub-mesh
-      }
+    public void LoadAssets(string pathToCzBox, string someContentFolder) {
+        var rm = new DataManager();
+        rm.RegisterDataProvider(
+            new FileDataProvider(someContentFolder));
+        LiveContent content;
+        using (var box = CzBox.Load(new FileInfo(pathToCzBox).OpenRead())) {
+            content = box.LoadLiveContent(rm, Defaults.LiveLoadOptions);
+        }
+
+        foreach (var e in content.Meshes) {
+            var mesh = e.Value;
+            foreach (var subMesh in mesh.SubMeshes) {
+                // Do something with each sub-mesh
+            }
+        }
+
+        foreach (var e in content.RenderedCoTextures) {
+            var image = e.Value;
+            // Do something with this texture
+        }
+
+        // Do something with the rest of the data in the content object
     }
-    foreach(var e in content.RenderedCoTextures){
-      Image<Rgba32> image = e.Value;
-      // Do something with this image
-    }
-    // Do something with the rest of the data in the content object
-  }
 }
 ```
 
@@ -80,7 +81,9 @@ Usage: `CzTool template definition|matchfile <targetFile>`
 
 Generate deflate compressed LiveMesh from FBX
 
-Usage: `CzTool makemesh <sourceFile> <targetFile> [-m|--matchFile FILE]`
+Usage:
+
+`CzTool makemesh <sourceFile> <targetFile> [-m|--matchFile FILE] [-u|--uniqueName NAME] [-v|--variantTypeName NAME] [-f|--fitUniqueName NAME]`
 
 matchFile is a JSON text file for assigning [bone](Customizer/Modeling/BoneType.cs) / [attach point](Customizer/Modeling/AttachPointType.cs) types to bones that follows this structure:
 
@@ -96,11 +99,19 @@ matchFile is a JSON text file for assigning [bone](Customizer/Modeling/BoneType.
 ```
 A template matchfile can be generated with `CzTool template matchfile <targetFile>`
 
+uniqueName is the unique name that should be assigned to the mesh for cases where loose clothing will be fit against the mesh or any mesh with the same variant type name.
+
+variantTypeName is a name used to associate "morphed" meshes sharing the same vertex structure.
+
+fitUniqueName is the unique name of the mesh this mesh was fit against (i.e. this mesh is a piece of loose clothing, and fitUniqueName is the body mesh modeled against).
+
 ### MakeTl
 
 Generate deflate compressed translation dictionary from JSON
 
-Usage: `CzTool maketl <sourceFile> <targetFile>`
+Usage:
+
+`CzTool maketl <sourceFile> <targetFile>`
 
 Source JSON must be an object with key-value pairs.
 
@@ -108,20 +119,26 @@ Source JSON must be an object with key-value pairs.
 
 Generate composite images defined in content definition
 
-Usage: `CzTool composite [-d|--directory <DIRECTORY>] <contentDefinition> <targetDir>`
+Usage:
+
+`CzTool composite [-d|--directory <DIRECTORY>] <contentDefinition> <targetDir>`
 
 ### Pack
 
 Write CzBox container
 
-Usage: `CzTool pack [-d|--definition <FILE>] <targetFile> [resources...]`
+Usage:
+
+`CzTool pack [-d|--definition <FILE>] <targetFile> [resources...]`
 
 ### Unpack
 
 Unpack CzBox container
 
-Usage: `CzTool unpack <sourceFile> <targetDir>`
+Usage:
+
+`CzTool unpack <sourceFile> <targetDir>`
 
 ## TO-DO
 
-* Mesh combining function
+* Modified mesh refit procedure

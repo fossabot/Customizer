@@ -1,9 +1,11 @@
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Customizer.Utility {
@@ -78,8 +80,33 @@ namespace Customizer.Utility {
 
             if (value is Array vArray) {
                 vArray.Length.WriteTo(stream);
-                foreach (var o in vArray)
-                    Serialize(stream, o);
+                var ta = t.GetElementType();
+                // ReSharper disable PossibleNullReferenceException
+                if (ta == typeof(sbyte))
+                    stream.Write(MemoryMarshal.Cast<sbyte, byte>(vArray as sbyte[]));
+                else if (ta == typeof(byte))
+                    stream.Write(vArray as byte[] ?? throw new NullReferenceException(), 0, vArray.Length);
+                else if (ta == typeof(short))
+                    stream.Write(MemoryMarshal.Cast<short, byte>(vArray as short[]));
+                else if (ta == typeof(ushort))
+                    stream.Write(MemoryMarshal.Cast<ushort, byte>(vArray as ushort[]));
+                else if (ta == typeof(int))
+                    stream.Write(MemoryMarshal.Cast<int, byte>(vArray as int[]));
+                else if (ta == typeof(uint))
+                    stream.Write(MemoryMarshal.Cast<uint, byte>(vArray as uint[]));
+                else if (ta == typeof(long))
+                    stream.Write(MemoryMarshal.Cast<long, byte>(vArray as long[]));
+                else if (ta == typeof(ulong))
+                    stream.Write(MemoryMarshal.Cast<ulong, byte>(vArray as ulong[]));
+                else if (ta == typeof(float))
+                    stream.Write(MemoryMarshal.Cast<float, byte>(vArray as float[]));
+                else if (ta == typeof(double))
+                    stream.Write(MemoryMarshal.Cast<double, byte>(vArray as double[]));
+                // ReSharper restore PossibleNullReferenceException
+                else
+                    foreach (var o in vArray)
+                        Serialize(stream, o);
+
                 return;
             }
 
@@ -186,55 +213,26 @@ namespace Customizer.Utility {
                 var t2 = t.GetElementType() ??
                          throw new Exception($"Element type for array not found in object of type {t}");
                 var vArray = Array.CreateInstance(t2, count);
-                if (t == typeof(sbyte)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadByteOrThrow(), i);
-                }
-
-                else if (t == typeof(byte)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadByteOrThrow(), i);
-                }
-
-                else if (t == typeof(short)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadS16(), i);
-                }
-
-                else if (t == typeof(ushort)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadS32(), i);
-                }
-
-                else if (t == typeof(int)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadS32(), i);
-                }
-
-                else if (t == typeof(uint)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadU32(), i);
-                }
-
-                else if (t == typeof(long)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadS64(), i);
-                }
-
-                else if (t == typeof(ulong)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadU64(), i);
-                }
-
-                else if (t == typeof(float)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadSingle(), i);
-                }
-
-                else if (t == typeof(double)) {
-                    for (var i = 0; i < count; i++)
-                        vArray.SetValue(stream.ReadDouble(), i);
-                }
+                if (t == typeof(sbyte))
+                    stream.Read(MemoryMarshal.Cast<sbyte, byte>(vArray as sbyte[]));
+                else if (t == typeof(byte))
+                    stream.Read(vArray as byte[]);
+                else if (t == typeof(short))
+                    stream.Read(MemoryMarshal.Cast<short, byte>(vArray as short[]));
+                else if (t == typeof(ushort))
+                    stream.Read(MemoryMarshal.Cast<ushort, byte>(vArray as ushort[]));
+                else if (t == typeof(int))
+                    stream.Read(MemoryMarshal.Cast<int, byte>(vArray as int[]));
+                else if (t == typeof(uint))
+                    stream.Read(MemoryMarshal.Cast<uint, byte>(vArray as uint[]));
+                else if (t == typeof(long))
+                    stream.Read(MemoryMarshal.Cast<long, byte>(vArray as long[]));
+                else if (t == typeof(ulong))
+                    stream.Read(MemoryMarshal.Cast<ulong, byte>(vArray as ulong[]));
+                else if (t == typeof(float))
+                    stream.Read(MemoryMarshal.Cast<float, byte>(vArray as float[]));
+                else if (t == typeof(double))
+                    stream.Read(MemoryMarshal.Cast<double, byte>(vArray as double[]));
                 else
                     for (var i = 0; i < count; i++)
                         vArray.SetValue(Deserialize(t2, stream), i);
@@ -259,9 +257,9 @@ namespace Customizer.Utility {
                 var vDict = res as IDictionary;
                 Debug.Assert(vDict != null, nameof(vDict) + " != null");
                 var count = stream.ReadS32();
-                var targs = t.GetGenericArguments();
-                var t2 = targs[0];
-                var t3 = targs[1];
+                var typeArgs = t.GetGenericArguments();
+                var t2 = typeArgs[0];
+                var t3 = typeArgs[1];
                 for (var i = 0; i < count; i++)
                     vDict.Add(Deserialize(t2, stream), Deserialize(t3, stream));
 
@@ -294,8 +292,8 @@ namespace Customizer.Utility {
             switch (info.MemberType) {
                 case MemberTypes.Field:
                     var fi = (FieldInfo) info;
-                    var fres = Deserialize(fi.FieldType, stream);
-                    ((FieldInfo) info).SetValue(target, fres);
+                    var fieldRes = Deserialize(fi.FieldType, stream);
+                    ((FieldInfo) info).SetValue(target, fieldRes);
                     break;
                 case MemberTypes.Property:
                     var pi = (PropertyInfo) info;
@@ -305,6 +303,44 @@ namespace Customizer.Utility {
                     }
 
                     break;
+            }
+        }
+
+        private static void Write(this Stream stream, Span<byte> span) {
+            var arr = ArrayPool<byte>.Shared.Rent(Math.Min(span.Length, 4096));
+            var arrLen = arr.Length;
+            try {
+                var read = 0;
+                var left = span.Length;
+                while (left > 0) {
+                    var len = Math.Min(left, arrLen);
+                    span.Slice(read, len).CopyTo(arr);
+                    stream.Write(arr, 0, len);
+                    read += len;
+                    left -= len;
+                }
+            }
+            finally {
+                ArrayPool<byte>.Shared.Return(arr);
+            }
+        }
+
+        private static void Read(this Stream stream, Span<byte> span) {
+            var arr = ArrayPool<byte>.Shared.Rent(Math.Min(span.Length, 4096));
+            var arrLen = arr.Length;
+            try {
+                var read = 0;
+                var left = span.Length;
+                while (left > 0) {
+                    var len = Math.Min(left, arrLen);
+                    var aLen = stream.Read(arr, 0, len);
+                    arr.CopyTo(span.Slice(read, aLen));
+                    read += aLen;
+                    left -= aLen;
+                }
+            }
+            finally {
+                ArrayPool<byte>.Shared.Return(arr);
             }
         }
 

@@ -9,7 +9,7 @@ namespace Customizer.Modeling {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
     [CzCustomSerializeMembers]
-    public class MeshConfig : ICloneable {
+    public sealed class MeshConfig : ICloneable {
         /// <summary>
         /// Name of mesh this config is for
         /// </summary>

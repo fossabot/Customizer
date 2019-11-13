@@ -7,13 +7,14 @@
     <Copyright>Copyright ©2019 teamRokuro</Copyright>
     <PackageProjectUrl></PackageProjectUrl>
     <Company>teamRokuro</Company>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
     <PackOnBuild>true</PackOnBuild>
     <Owners>riina</Owners>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/ryuuguze/Customizer</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageVersion>2.0.0</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

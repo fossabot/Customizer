@@ -11,7 +11,7 @@ namespace Customizer.Content {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
         Justification = "<Pending>")]
     [CzCustomSerializeMembers]
-    public class ContentDefinition : ICloneable {
+    public sealed class ContentDefinition : ICloneable {
         /// <summary>
         /// Map of mesh names to URIs
         /// </summary>

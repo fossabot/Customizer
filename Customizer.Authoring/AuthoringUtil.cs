@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
+//using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -36,22 +36,44 @@ namespace Customizer.Authoring {
             for (var iSubMesh = 0; iSubMesh < subMeshes.Length; iSubMesh++) {
                 // Define sub-mesh
                 var subMesh = scene.Meshes[iSubMesh];
-                var vertices = new Vector3[subMesh.VertexCount];
-                var uvs = new Vector2[subMesh.VertexCount];
-                var normals = new Vector3[subMesh.VertexCount];
+                //var vertices = new Vector3[subMesh.VertexCount];
+                var vertices = new float[subMesh.VertexCount * 3];
+                //var uvs = new Vector2[subMesh.VertexCount];
+                var uvs = new float[subMesh.VertexCount * 2];
+                //var normals = new Vector3[subMesh.VertexCount];
+                var normals = new float[subMesh.VertexCount * 3];
                 var weights = new BoneWeight[subMesh.VertexCount];
                 var triangles = new int[subMesh.FaceCount * 3];
-                var mSubMesh = subMeshes[iSubMesh] = new LiveSubMesh
-                    {Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles};
+                subMeshes[iSubMesh] = new LiveSubMesh {
+                    Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles,
+                    MaterialIdx = subMesh.MaterialIndex, VertexCount = subMesh.VertexCount
+                };
                 // Get vertices
-                for (var iVertex = 0; iVertex < vertices.Length; iVertex++)
-                    vertices[iVertex] = subMesh.Vertices[iVertex].ToVector3();
+                //for (var iVertex = 0; iVertex < vertices.Length; iVertex++)
+                //    vertices[iVertex] = subMesh.Vertices[iVertex].ToVector3();
+                for (var iVertex = 0; iVertex < subMesh.Vertices.Count; iVertex++) {
+                    vertices[iVertex * 3] = subMesh.Vertices[iVertex].X;
+                    vertices[iVertex * 3 + 1] = subMesh.Vertices[iVertex].Y;
+                    vertices[iVertex * 3 + 2] = subMesh.Vertices[iVertex].Z;
+                }
+
                 // Get UVs
-                for (var iUv = 0; iUv < uvs.Length; iUv++)
-                    uvs[iUv] = subMesh.TextureCoordinateChannels[0][iUv].ToVector2();
+                //for (var iUv = 0; iUv < uvs.Length; iUv++)
+                //    uvs[iUv] = subMesh.TextureCoordinateChannels[0][iUv].ToVector2();
+                for (var iUv = 0; iUv < subMesh.TextureCoordinateChannels[0].Count; iUv++) {
+                    uvs[iUv * 2] = subMesh.TextureCoordinateChannels[0][iUv].X;
+                    uvs[iUv * 2 + 1] = subMesh.TextureCoordinateChannels[0][iUv].X;
+                }
+
                 // Get normals
-                for (var iNormal = 0; iNormal < normals.Length; iNormal++)
-                    normals[iNormal] = subMesh.Normals[iNormal].ToVector3();
+                //for (var iNormal = 0; iNormal < normals.Length; iNormal++)
+                //    normals[iNormal] = subMesh.Normals[iNormal].ToVector3();
+                for (var iNormal = 0; iNormal < subMesh.Normals.Count; iNormal++) {
+                    normals[iNormal * 3] = subMesh.Normals[iNormal].X;
+                    normals[iNormal * 3 + 1] = subMesh.Normals[iNormal].Y;
+                    normals[iNormal * 3 + 2] = subMesh.Normals[iNormal].Z;
+                }
+
                 // Get triangles
                 for (var iTriangle = 0; iTriangle < subMesh.FaceCount; iTriangle++) {
                     var x = subMesh.Faces[iTriangle];
@@ -59,8 +81,6 @@ namespace Customizer.Authoring {
                         triangles[3 * iTriangle + i] = x.Indices[i];
                 }
 
-                // Get material index
-                mSubMesh.MaterialIdx = subMesh.MaterialIndex;
                 // Get bones
                 foreach (var bone in subMesh.Bones) {
                     foreach (var vWeight in bone.VertexWeights) {
@@ -89,6 +109,7 @@ namespace Customizer.Authoring {
 
                         if (weight.count != 4)
                             weight.count++;
+                        weights[vWeight.VertexID] = weight;
                     }
 
                     // Skip bone if already processed
@@ -160,11 +181,13 @@ namespace Customizer.Authoring {
             }
         }
 
+        /*
         private static Vector2 ToVector2(this Vector3D vector)
             => new Vector2(vector.X, vector.Y);
 
         private static Vector3 ToVector3(this Vector3D vector)
             => new Vector3(vector.X, vector.Y, vector.Z);
+        */
 
         // ReSharper disable InconsistentNaming
         private static Matrix4x4 ToMatrix4x4(this Assimp.Matrix4x4 matrix) =>

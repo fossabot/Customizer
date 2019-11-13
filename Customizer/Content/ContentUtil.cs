@@ -26,6 +26,7 @@ namespace Customizer.Content {
         // ReSharper disable once UnusedMember.Global
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
             "CA2000: DisposeObjectsBeforeLosingScope", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "IDE0068:Use recommended dispose pattern", Justification = "<Pending>")]
         public static LiveContent LoadLiveContent(ContentDefinition definition, DataManager dataManager,
             LiveLoadOptions opts, CacheManager cacheManager = null) {
             if (definition == null)
@@ -134,6 +135,7 @@ namespace Customizer.Content {
             };
         }
 
+
         /// <summary>
         /// Render composite texture
         /// </summary>
@@ -142,6 +144,7 @@ namespace Customizer.Content {
         /// <param name="targetSize">Target output size</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0063:Use simple 'using' statement", Justification = "<Pending>")]
         public static Image<Rgba32> CoalesceTexture(Dictionary<string, Image<Rgba32>> textures,
             CoTextureDefinition definition, Size targetSize) {
             if (textures == null)
@@ -157,12 +160,13 @@ namespace Customizer.Content {
                     if (curSub.Mask != null) {
                         // Sub-texture is masked, resize texture to mask, mask texture, resize masked texture to target
                         var curMsk = textures[curSub.Mask];
-                        using (var curSrcResized = curSrc.Clone(x => x.Resize(curMsk.Size())))
+                        using (var curSrcResized = curSrc.Clone(x => x.Resize(target.Size())))
                             cur = curMsk.Clone(x => x
+                                .Resize(target.Size())
                                 // ReSharper disable once AccessToDisposedClosure
                                 .DrawImage(curSrcResized,
                                     new GraphicsOptions {AlphaCompositionMode = PixelAlphaCompositionMode.SrcIn})
-                                .Resize(target.Size())
+                                
                             );
                     }
                     else

@@ -10,7 +10,7 @@ namespace Customizer.Utility {
     /// <summary>
     /// Content loading utility
     /// </summary>
-    public class DataManager {
+    public sealed class DataManager {
         private readonly HashSet<IDataProvider> _providers = new HashSet<IDataProvider>();
         private readonly HashSet<IDataProvider> _stdProviders = new HashSet<IDataProvider>();
 

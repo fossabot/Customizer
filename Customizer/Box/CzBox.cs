@@ -9,11 +9,21 @@ namespace Customizer.Box {
     /// <summary>
     /// Base content container
     /// </summary>
-    public class CzBox {
-        private Stream _stream;
-        private ContentDefinition _contentDefinition;
-        private Dictionary<string, Tuple<int, int>> _entries;
-        private long _bOfs;
+    public sealed class CzBox : IDisposable {
+        private readonly Stream _stream;
+        private readonly ContentDefinition _contentDefinition;
+        private readonly Dictionary<string, Tuple<int, int>> _entries;
+        private readonly long _bOfs;
+        private readonly bool _closable;
+
+        private CzBox(Stream stream, ContentDefinition contentDefinition,
+            Dictionary<string, Tuple<int, int>> entries, long bOfs, bool leaveOpen) {
+            _stream = stream;
+            _contentDefinition = contentDefinition;
+            _entries = entries;
+            _bOfs = bOfs;
+            _closable = !leaveOpen;
+        }
 
         /// <summary>
         /// Write container header information for given data to stream
@@ -42,28 +52,27 @@ namespace Customizer.Box {
         /// Load container information from stream
         /// </summary>
         /// <param name="stream">Stream to read from</param>
+        /// <param name="leaveOpen">If true, don't close source stream on dispose</param>
         /// <returns>Container object based on input stream</returns>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null</exception>
-        public static CzBox Load(Stream stream) {
+        public static CzBox Load(Stream stream, bool leaveOpen = false) {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
             var baseOff = stream.Read7B(out var sbLen);
-            var res = new CzBox {
-                _stream = stream, _entries = new Dictionary<string, Tuple<int, int>>(),
-                _bOfs = baseOff + sbLen
-            };
+            var entries = new Dictionary<string, Tuple<int, int>>();
+            ContentDefinition contentDefinition;
             using (var ds = new DeflateStream(stream, CompressionMode.Decompress, true)) {
-                res._contentDefinition = Serializer.Deserialize<ContentDefinition>(ds);
+                contentDefinition = Serializer.Deserialize<ContentDefinition>(ds);
                 var ofs = 0;
                 var list = Serializer.Deserialize<List<MutableKeyValuePair<string, int>>>(ds);
                 if (list != null)
                     foreach (var (offset, length) in list) {
-                        res._entries.Add(offset, new Tuple<int, int>(ofs, length));
+                        entries.Add(offset, new Tuple<int, int>(ofs, length));
                         ofs += length;
                     }
             }
 
-            return res;
+            return new CzBox(stream, contentDefinition, entries, baseOff + sbLen, leaveOpen);
         }
 
         /// <summary>
@@ -191,6 +200,11 @@ namespace Customizer.Box {
                 get => _cOfs - _ofs;
                 set => _cOfs = _ofs + value;
             }
+        }
+
+        public void Dispose() {
+            if (_closable)
+                _stream?.Close();
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Customizer.Utility {
     /// <summary>
     /// Resource provider based on files in directory
     /// </summary>
-    public class FileDataProvider : IDataProvider {
+    public sealed class FileDataProvider : IDataProvider {
         private readonly string _basePath;
 
         public FileDataProvider(string basePath) {

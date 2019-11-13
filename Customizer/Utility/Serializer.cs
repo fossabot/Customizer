@@ -80,29 +80,50 @@ namespace Customizer.Utility {
 
             if (value is Array vArray) {
                 vArray.Length.WriteTo(stream);
-                var ta = t.GetElementType();
-                // ReSharper disable PossibleNullReferenceException
-                if (ta == typeof(sbyte))
-                    stream.Write(MemoryMarshal.Cast<sbyte, byte>(vArray as sbyte[]));
-                else if (ta == typeof(byte))
-                    stream.Write(vArray as byte[] ?? throw new NullReferenceException(), 0, vArray.Length);
-                else if (ta == typeof(short))
-                    stream.Write(MemoryMarshal.Cast<short, byte>(vArray as short[]));
-                else if (ta == typeof(ushort))
-                    stream.Write(MemoryMarshal.Cast<ushort, byte>(vArray as ushort[]));
-                else if (ta == typeof(int))
-                    stream.Write(MemoryMarshal.Cast<int, byte>(vArray as int[]));
-                else if (ta == typeof(uint))
-                    stream.Write(MemoryMarshal.Cast<uint, byte>(vArray as uint[]));
-                else if (ta == typeof(long))
-                    stream.Write(MemoryMarshal.Cast<long, byte>(vArray as long[]));
-                else if (ta == typeof(ulong))
-                    stream.Write(MemoryMarshal.Cast<ulong, byte>(vArray as ulong[]));
-                else if (ta == typeof(float))
-                    stream.Write(MemoryMarshal.Cast<float, byte>(vArray as float[]));
-                else if (ta == typeof(double))
-                    stream.Write(MemoryMarshal.Cast<double, byte>(vArray as double[]));
-                // ReSharper restore PossibleNullReferenceException
+                if (vArray is sbyte[] vArrayS8)
+                    stream.Write(MemoryMarshal.Cast<sbyte, byte>(vArrayS8));
+                else if (vArray is byte[] vArrayU8)
+                    stream.Write(vArrayU8, 0, vArray.Length);
+                else if (vArray is short[] vArrayS16)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Write(MemoryMarshal.Cast<short, byte>(vArrayS16));
+                    else
+                        foreach (var o in vArrayS16)
+                            o.WriteTo(stream);
+                else if (vArray is ushort[] vArrayU16)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Write(MemoryMarshal.Cast<ushort, byte>(vArrayU16));
+                    else
+                        foreach (var o in vArrayU16)
+                            o.WriteTo(stream);
+                else if (vArray is int[] vArrayS32)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Write(MemoryMarshal.Cast<int, byte>(vArrayS32));
+                    else
+                        foreach (var o in vArrayS32)
+                            o.WriteTo(stream);
+                else if (vArray is uint[] vArrayU32)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Write(MemoryMarshal.Cast<uint, byte>(vArrayU32));
+                    else
+                        foreach (var o in vArrayU32)
+                            o.WriteTo(stream);
+                else if (vArray is long[] vArrayS64)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Write(MemoryMarshal.Cast<long, byte>(vArrayS64));
+                    else
+                        foreach (var o in vArrayS64)
+                            o.WriteTo(stream);
+                else if (vArray is ulong[] vArrayU64)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Write(MemoryMarshal.Cast<ulong, byte>(vArrayU64));
+                    else
+                        foreach (var o in vArrayU64)
+                            o.WriteTo(stream);
+                else if (vArray is float[] vArraySingle)
+                    stream.Write(MemoryMarshal.Cast<float, byte>(vArraySingle));
+                else if (vArray is double[] vArrayDouble)
+                    stream.Write(MemoryMarshal.Cast<double, byte>(vArrayDouble));
                 else
                     foreach (var o in vArray)
                         Serialize(stream, o);
@@ -213,26 +234,50 @@ namespace Customizer.Utility {
                 var t2 = t.GetElementType() ??
                          throw new Exception($"Element type for array not found in object of type {t}");
                 var vArray = Array.CreateInstance(t2, count);
-                if (t == typeof(sbyte))
-                    stream.Read(MemoryMarshal.Cast<sbyte, byte>(vArray as sbyte[]));
-                else if (t == typeof(byte))
-                    stream.Read(vArray as byte[]);
-                else if (t == typeof(short))
-                    stream.Read(MemoryMarshal.Cast<short, byte>(vArray as short[]));
-                else if (t == typeof(ushort))
-                    stream.Read(MemoryMarshal.Cast<ushort, byte>(vArray as ushort[]));
-                else if (t == typeof(int))
-                    stream.Read(MemoryMarshal.Cast<int, byte>(vArray as int[]));
-                else if (t == typeof(uint))
-                    stream.Read(MemoryMarshal.Cast<uint, byte>(vArray as uint[]));
-                else if (t == typeof(long))
-                    stream.Read(MemoryMarshal.Cast<long, byte>(vArray as long[]));
-                else if (t == typeof(ulong))
-                    stream.Read(MemoryMarshal.Cast<ulong, byte>(vArray as ulong[]));
-                else if (t == typeof(float))
-                    stream.Read(MemoryMarshal.Cast<float, byte>(vArray as float[]));
-                else if (t == typeof(double))
-                    stream.Read(MemoryMarshal.Cast<double, byte>(vArray as double[]));
+                if (vArray is sbyte[] vArrayS8)
+                    stream.Read(MemoryMarshal.Cast<sbyte, byte>(vArrayS8));
+                else if (vArray is byte[] vArrayU8)
+                    stream.Read(vArrayU8);
+                else if (vArray is short[] vArrayS16)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Read(MemoryMarshal.Cast<short, byte>(vArrayS16));
+                    else
+                        for (var i = 0; i < count; i++)
+                            vArrayS16.SetValue(stream.ReadS16(), i);
+                else if (vArray is ushort[] vArrayU16)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Read(MemoryMarshal.Cast<ushort, byte>(vArrayU16));
+                    else
+                        for (var i = 0; i < count; i++)
+                            vArrayU16.SetValue(stream.ReadU16(), i);
+                else if (vArray is int[] vArrayS32)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Read(MemoryMarshal.Cast<int, byte>(vArrayS32));
+                    else
+                        for (var i = 0; i < count; i++)
+                            vArrayS32.SetValue(stream.ReadS32(), i);
+                else if (vArray is uint[] vArrayU32)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Read(MemoryMarshal.Cast<uint, byte>(vArrayU32));
+                    else
+                        for (var i = 0; i < count; i++)
+                            vArrayU32.SetValue(stream.ReadU32(), i);
+                else if (vArray is long[] vArrayS64)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Read(MemoryMarshal.Cast<long, byte>(vArrayS64));
+                    else
+                        for (var i = 0; i < count; i++)
+                            vArrayS64.SetValue(stream.ReadS64(), i);
+                else if (vArray is ulong[] vArrayU64)
+                    if (BitConverter.IsLittleEndian)
+                        stream.Read(MemoryMarshal.Cast<ulong, byte>(vArrayU64));
+                    else
+                        for (var i = 0; i < count; i++)
+                            vArrayU64.SetValue(stream.ReadU64(), i);
+                else if (vArray is float[] vArraySingle)
+                    stream.Read(MemoryMarshal.Cast<float, byte>(vArraySingle));
+                else if (vArray is double[] vArrayDouble)
+                    stream.Read(MemoryMarshal.Cast<double, byte>(vArrayDouble));
                 else
                     for (var i = 0; i < count; i++)
                         vArray.SetValue(Deserialize(t2, stream), i);
@@ -307,7 +352,7 @@ namespace Customizer.Utility {
         }
 
         private static void Write(this Stream stream, Span<byte> span) {
-            var arr = ArrayPool<byte>.Shared.Rent(Math.Min(span.Length, 4096));
+            var arr = ArrayPool<byte>.Shared.Rent(4096);
             var arrLen = arr.Length;
             try {
                 var read = 0;
@@ -326,7 +371,7 @@ namespace Customizer.Utility {
         }
 
         private static void Read(this Stream stream, Span<byte> span) {
-            var arr = ArrayPool<byte>.Shared.Rent(Math.Min(span.Length, 4096));
+            var arr = ArrayPool<byte>.Shared.Rent(4096);
             var arrLen = arr.Length;
             try {
                 var read = 0;
@@ -334,7 +379,7 @@ namespace Customizer.Utility {
                 while (left > 0) {
                     var len = Math.Min(left, arrLen);
                     var aLen = stream.Read(arr, 0, len);
-                    arr.CopyTo(span.Slice(read, aLen));
+                    arr.AsSpan(0, aLen).CopyTo(span.Slice(read, aLen));
                     read += aLen;
                     left -= aLen;
                 }

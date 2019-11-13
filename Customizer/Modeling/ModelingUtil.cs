@@ -9,7 +9,7 @@ namespace Customizer.Modeling {
         /// <param name="targetVariant">Target variant</param>
         /// <param name="sourceMesh">Mesh to modify</param>
         /// <param name="options">Processing configuration</param>
-        /// <returns></returns>
+        /// <returns>Newly allocated refit mesh</returns>
         public static LiveMesh Refit(LiveMesh baseVariant, LiveMesh targetVariant, LiveMesh sourceMesh,
             RefitOptions options) {
             if (baseVariant == null)

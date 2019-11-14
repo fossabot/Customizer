@@ -30,7 +30,8 @@ namespace Customizer.Test {
                 l = new List<string> {"testerin", "bonit"},
                 d = new Dictionary<string, string> {{"hi", "babe"}, {"we", "rock"}},
                 e = E.B,
-                v = new Vector3(1.0f, 2.0f, 3.0f)
+                v = new Vector3(1.0f, 2.0f, 3.0f),
+                a2 = new[] {0x1000, 0x1033140, 0x10f0833983}
             };
             Serializer.Serialize(ms, y);
             ms.Position = 0;
@@ -38,10 +39,14 @@ namespace Customizer.Test {
             Assert.AreEqual(y.w, z.w, "field check fail");
             Assert.AreEqual(y.H, z.H, "property check fail");
             Assert.IsNotNull(z.a, "array null check fail");
+            Assert.AreEqual(y.a.Length, z.a.Length, "array length check fail");
             for (var i = 0; i < y.a.Length; i++)
                 Assert.AreEqual(y.a[i], z.a[i], $"array entry {i + 1} check fail");
+            Assert.IsNotNull(z.a2, "array2 null check fail");
+            Assert.AreEqual(y.a2.Length, z.a2.Length, "array2 length check fail");
+            for (var i = 0; i < y.a2.Length; i++)
+                Assert.AreEqual(y.a2[i], z.a2[i], $"array2 entry {i + 1} check fail");
             Assert.IsNotNull(z.l, "list null check fail");
-            Assert.AreEqual(y.a.Length, z.a.Length, "array length check fail");
             Assert.AreEqual(y.l.Count, z.l.Count, "list length check fail");
             Assert.AreEqual(y.l[0], z.l[0], "list entry 1 check fail");
             Assert.AreEqual(y.l[1], z.l[1], "list entry 2 check fail");
@@ -65,7 +70,8 @@ namespace Customizer.Test {
                 l = new List<string> {"testerin", "bonit"},
                 d = new Dictionary<string, string> {{"hi", "babe"}, {"we", "rock"}},
                 e = E.B,
-                v = new Vector3(1.0f, 2.0f, 3.0f)
+                v = new Vector3(1.0f, 2.0f, 3.0f),
+                a2 = new[] {0x1000, 0x1033140, 0x10f0833983}
             };
             Serializer.Serialize(ms, y);
             ms.Position = 0;
@@ -73,10 +79,14 @@ namespace Customizer.Test {
             Assert.AreEqual(y.w, z.w, "field check fail");
             Assert.AreEqual(y.H, z.H, "property check fail");
             Assert.IsNotNull(z.a, "array null check fail");
+            Assert.AreEqual(y.a.Length, z.a.Length, "array length check fail");
             for (var i = 0; i < y.a.Length; i++)
                 Assert.AreEqual(y.a[i], z.a[i], $"array entry {i + 1} check fail");
+            Assert.IsNotNull(z.a2, "array2 null check fail");
+            Assert.AreEqual(y.a2.Length, z.a2.Length, "array2 length check fail");
+            for (var i = 0; i < y.a2.Length; i++)
+                Assert.AreEqual(y.a2[i], z.a2[i], $"array2 entry {i + 1} check fail");
             Assert.IsNotNull(z.l, "list null check fail");
-            Assert.AreEqual(y.a.Length, z.a.Length, "array length check fail");
             Assert.AreEqual(y.l.Count, z.l.Count, "list length check fail");
             Assert.AreEqual(y.l[0], z.l[0], "list entry 1 check fail");
             Assert.AreEqual(y.l[1], z.l[1], "list entry 2 check fail");
@@ -100,7 +110,8 @@ namespace Customizer.Test {
                 l = new List<string> {"testerin", "bonit"},
                 d = new Dictionary<string, string> {{"hi", "babe"}, {"we", "rock"}},
                 e = E.B,
-                v = new Vector3(1.0f, 2.0f, 3.0f)
+                v = new Vector3(1.0f, 2.0f, 3.0f),
+                a2 = new[] {0x1000, 0x1033140, 0x10f0833983}
             };
             Serializer.Serialize(ms, y);
             ms.Position = 0;
@@ -108,10 +119,14 @@ namespace Customizer.Test {
             Assert.AreEqual(y.w, z.w, "field check fail");
             Assert.AreEqual(y.H, z.H, "property check fail");
             Assert.IsNotNull(z.a, "array null check fail");
+            Assert.AreEqual(y.a.Length, z.a.Length, "array length check fail");
             for (var i = 0; i < y.a.Length; i++)
                 Assert.AreEqual(y.a[i], z.a[i], $"array entry {i + 1} check fail");
+            Assert.IsNotNull(z.a2, "array2 null check fail");
+            Assert.AreEqual(y.a2.Length, z.a2.Length, "array2 length check fail");
+            for (var i = 0; i < y.a2.Length; i++)
+                Assert.AreEqual(y.a2[i], z.a2[i], $"array2 entry {i + 1} check fail");
             Assert.IsNotNull(z.l, "list null check fail");
-            Assert.AreEqual(y.a.Length, z.a.Length, "array length check fail");
             Assert.AreEqual(y.l.Count, z.l.Count, "list length check fail");
             Assert.AreEqual(y.l[0], z.l[0], "list entry 1 check fail");
             Assert.AreEqual(y.l[1], z.l[1], "list entry 2 check fail");
@@ -135,6 +150,7 @@ namespace Customizer.Test {
             [CzSerialize(4)] public Dictionary<string, string> d;
             [CzSerialize(5)] public E e;
             [CzSerialize(6)] public Vector3 v;
+            [CzSerialize(7)] public long[] a2;
         }
 
         [CzCustomSerializeMembers]
@@ -150,7 +166,8 @@ namespace Customizer.Test {
             [CzSerialize(4)] public Dictionary<string, string> d;
             [CzSerialize(5)] public E e;
             [CzSerialize(6)] public Vector3 v;
-            [CzSerialize(7)] public Vector3 v2;
+            [CzSerialize(7)] public long[] a2;
+            [CzSerialize(8)] public Vector3 v2;
 #pragma warning restore 649
         }
 
@@ -162,6 +179,7 @@ namespace Customizer.Test {
             public Dictionary<string, string> d;
             public E e;
             public Vector3 v;
+            public long[] a2;
         }
 
         public enum E : short {

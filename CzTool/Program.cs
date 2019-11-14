@@ -49,31 +49,37 @@ namespace CzTool {
             switch (options.Type.ToLowerInvariant()) {
                 case "definition":
                     var def = new ContentDefinition();
-                    def.MeshConfigs.Add("(configName)", new MeshConfig {
-                        Mesh = "(meshName)",
+                    def.MeshConfigs.Add("yourConfigName", new MeshConfig {
+                        Mesh = "yourMeshName",
                         Materials = new List<Material> {
-                            new Material
-                                {Textures = new Dictionary<string, string> {{"(shaderParameterName)", "(textureName)"}}}
+                            new Material {
+                                Textures = new Dictionary<string, string>
+                                    {{"yourShaderParameterName", "yourTextureName"}}
+                            }
                         },
-                        CustomAttachPoints = new List<AttachPoint> {new AttachPoint {BoneName = "(boneName)"}}
+                        CustomAttachPoints = new List<AttachPoint> {new AttachPoint {BoneName = "yourBoneName"}}
                     });
-                    def.MeshPaths.Add("(meshName)", "(file|deflate://local/...)");
-                    def.ResourcePaths.Add("(resourceName)", "(file|deflate://local/...)");
-                    def.TexturePaths.Add("(textureName)", "(file|deflate://local/...)");
-                    def.TranslationPaths.Add("(translationName)", "(file|deflate://local/...)");
-                    def.CoTextures.Add("(coTextureName)", new CoTextureDefinition {
+                    def.MeshPaths.Add("yourMeshName", "yourPath");
+                    def.ResourcePaths.Add("yourResourceName", "yourPath");
+                    def.TexturePaths.Add("yourTextureName", "yourPath");
+                    def.TranslationPaths.Add("yourTranslationName", "yourPath");
+                    def.CoTextures.Add("yourCoTextureName", new CoTextureDefinition {
                         Height = 1024,
                         Width = 1024,
                         Textures = new List<SubTextureDefinition>
-                            {new SubTextureDefinition {Mask = "(textureName)", Texture = "(textureName)"}}
+                            {new SubTextureDefinition {Mask = "yourTextureName", Texture = "yourTextureName"}}
                     });
                     using (var ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write))
                         AuthoringUtil.JsonSerialize(def, ofs);
                     break;
                 case "matchfile":
                     var matchFile = new MatchRules();
-                    matchFile.Bones.Add("(boneRegex)", BoneType.Head);
-                    matchFile.AttachPoints.Add("(boneRegex)", AttachPointType.RightHandBack);
+                    foreach (var t in (BoneType[]) Enum.GetValues(typeof(BoneType)))
+                        matchFile.Bones.Add($"boneRegex{t.ToString()}", t);
+
+                    foreach (var t in (AttachPointType[]) Enum.GetValues(typeof(AttachPointType)))
+                        matchFile.AttachPoints.Add($"boneRegex{t.ToString()}", t);
+
                     using (var ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write))
                         AuthoringUtil.JsonSerialize(matchFile, ofs);
                     break;

@@ -10,6 +10,16 @@ This library is meant to provide a basic common custom content consumption platf
 
 Given a standard set of resources and additional user data, users either write JSON text or use external tools to generate definitions referencing named resources by path and defining properties (e.g. custom armor attach points and layered texture generation) that can then be loaded into shared formats for consumption by other libraries.
 
+Content paths are specified as URIs.
+
+* Scheme determines how the input stream is transformed when read. Supported values are:
+  - `file`: No transformation
+  - `deflate`: Decompress using deflate algorithm
+* Host determines which data providers will look for the content.
+  - `local`: CzBox and filesystem providers
+  - `proc`: Procedural data (built-in for `DataManager`)
+    - `file://proc/color:RRGGBB`: generate 1x1 PNG stream for RGB color from hex color
+
 **Note:** The Customizer assembly does not understand JSON encoding or FBX models. If content is authored by hand in these formats, the following conversions must be made:
 * Content definitions written in JSON must be converted to CzBox containers with CzTool's [Pack](#Pack) command.
 * Translation dictionaries written in JSON must be converted to deflate compressed translation dictionaries with CzTool's [MakeTl](#MakeTl) command.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -15,7 +16,7 @@ namespace Customizer.Utility {
         private readonly HashSet<IDataProvider> _stdProviders = new HashSet<IDataProvider>();
 
         public DataManager() {
-            _stdProviders.Add(new HexProcDataProvider());
+            _stdProviders.Add(new ProcDataProvider());
         }
 
         /// <summary>
@@ -71,20 +72,26 @@ namespace Customizer.Utility {
         /// <summary>
         /// Procedural resource provider (hex colors)
         /// </summary>
-        private class HexProcDataProvider : IDataProvider {
+        private class ProcDataProvider : IDataProvider {
             public Stream GetStream(Uri uri) {
                 if (uri == null)
                     throw new ArgumentNullException(nameof(uri));
                 if (!"proc".Equals(uri.Host, StringComparison.InvariantCultureIgnoreCase)) return null;
-                if (!uint.TryParse(
-                    uri.AbsolutePath.Trim(Path.VolumeSeparatorChar, Path.DirectorySeparatorChar,
-                        Path.AltDirectorySeparatorChar), NumberStyles.HexNumber, null, out var res)) return null;
-                var resStream = new MemoryStream();
-                using (var img = new Image<Rgba32>(1, 1)
-                    {[0, 0] = new Rgba32((byte) (res >> 16), (byte) (res >> 8), (byte) res)})
-                    img.SaveAsPng(resStream);
-                resStream.Position = 0;
-                return resStream;
+                Match match;
+                if (!(match = Regex.Match(uri.AbsolutePath, @"\/([A-Za-z]*):(.*)")).Success) return null;
+                switch (match.Groups[1].Value.ToUpperInvariant()) {
+                    case "COLOR":
+                        if (!uint.TryParse(match.Groups[2].Value.TrimEnd('/'), NumberStyles.HexNumber, null, out var res))
+                            return null;
+                        var resStream = new MemoryStream();
+                        using (var img = new Image<Rgba32>(1, 1)
+                            {[0, 0] = new Rgba32((byte) (res >> 16), (byte) (res >> 8), (byte) res)})
+                            img.SaveAsPng(resStream);
+                        resStream.Position = 0;
+                        return resStream;
+                    default:
+                        return null;
+                }
             }
         }
     }

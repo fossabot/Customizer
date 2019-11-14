@@ -28,40 +28,46 @@ namespace Customizer.Modeling {
         [CzSerialize(2)] public float[] Normals;
 
         /// <summary>
+        /// Vertex-indexed bone IDs in sub-mesh
+        /// </summary>
+        [CzSerialize(3)] public int[] BoneIds;
+        
+        
+        /// <summary>
         /// Vertex-indexed bone weights in sub-mesh
         /// </summary>
-        [CzSerialize(3)] public BoneWeight[] BoneWeights;
+        [CzSerialize(4)] public float[] BoneWeights;
 
         /// <summary>
         /// Triangles in sub-mesh
         /// </summary>
-        [CzSerialize(4)] public int[] Triangles;
+        [CzSerialize(5)] public int[] Triangles;
 
         /// <summary>
         /// Material index for sub-mesh
         /// </summary>
-        [CzSerialize(5)] public int MaterialIdx;
+        [CzSerialize(6)] public int MaterialIdx;
         
         /// <summary>
         /// Number of vertices in sub-mesh
         /// </summary>
-        [CzSerialize(6)] public int VertexCount;
+        [CzSerialize(7)] public int VertexCount;
 
         public object Clone() {
             var res = new LiveSubMesh {
-                //Vertices = new Vector3[Vertices.Length],
                 Vertices = new float[Vertices.Length],
-                //UVs = new Vector2[UVs.Length],
                 UVs = new float[UVs.Length],
-                //Normals = new Vector3[Normals.Length],
                 Normals = new float[Normals.Length],
-                BoneWeights = new BoneWeight[BoneWeights.Length],
+                BoneIds = new int[BoneIds.Length],
+                BoneWeights = new float[BoneWeights.Length],
                 Triangles = new int[Triangles.Length],
-                MaterialIdx = MaterialIdx
+                MaterialIdx = MaterialIdx,
+                VertexCount = VertexCount
             };
             Array.Copy(Vertices, res.Vertices, Vertices.Length);
             Array.Copy(UVs, res.UVs, UVs.Length);
             Array.Copy(Normals, res.Normals, Normals.Length);
+            Array.Copy(BoneIds, res.BoneIds, BoneIds.Length);
             Array.Copy(BoneWeights, res.BoneWeights, BoneWeights.Length);
             Array.Copy(Triangles, res.Triangles, Triangles.Length);
             return res;

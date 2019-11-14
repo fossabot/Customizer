@@ -134,7 +134,9 @@ namespace CzTool {
                     attachPointRegexs = mf.AttachPoints;
                 }
 
+                Console.Write("Parsing... ");
                 mesh = AuthoringUtil.GenerateLiveMesh(ifs, boneRegexs, attachPointRegexs);
+                Console.WriteLine("Done.");
             }
 
             mesh.UniqueName = options.UniqueName;
@@ -142,8 +144,12 @@ namespace CzTool {
             mesh.FitUniqueName = options.FitUniqueName;
 
             using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
-                CompressionLevel.Optimal, false))
+                CompressionLevel.Optimal, false)) {
+                Console.Write("Serializing... ");
                 Serializer.Serialize(ofs, mesh);
+                Console.WriteLine("Done.");
+            }
+
             return 0;
         }
 

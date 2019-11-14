@@ -36,6 +36,13 @@ namespace Customizer.Box {
             List<MutableKeyValuePair<string, int>> entries) {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
+            var cpEntries = new List<MutableKeyValuePair<string, int>>(entries);
+            for (var i = 0; i < cpEntries.Count; i++) {
+                var kvp = cpEntries[i];
+                kvp.Item1 = kvp.Item1.Trim('/', '\\');
+                cpEntries[i] = kvp;
+            }
+
             using (var ms = new MemoryStream()) {
                 using (var ds = new DeflateStream(ms, CompressionLevel.Optimal, true)) {
                     Serializer.Serialize(ds, contentDefinition);
@@ -74,6 +81,11 @@ namespace Customizer.Box {
 
             return new CzBox(stream, contentDefinition, entries, baseOff + sbLen, leaveOpen);
         }
+
+        /// <summary>
+        /// Whether this container has a content definition
+        /// </summary>
+        public bool HasContentDefinition => _contentDefinition != null;
 
         /// <summary>
         /// Get ContentDefinition from container if it contains one
@@ -141,7 +153,7 @@ namespace Customizer.Box {
                 if (uri == null)
                     throw new ArgumentNullException(nameof(uri));
                 if (!"local".Equals(uri.Host, StringComparison.InvariantCultureIgnoreCase)) return null;
-                return _box._entries.TryGetValue(uri.AbsolutePath, out var res)
+                return _box._entries.TryGetValue(uri.AbsolutePath.Trim('/'), out var res)
                     ? new CzBoxSubStream(_box._stream, _box._bOfs + res.Item1, res.Item2)
                     : null;
             }

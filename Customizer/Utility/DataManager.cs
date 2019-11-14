@@ -20,14 +20,14 @@ namespace Customizer.Utility {
         }
 
         /// <summary>
-        /// Register provider for use
+        /// Register provider for use by data manager
         /// </summary>
         /// <param name="provider">Data provider to add</param>
         public void RegisterDataProvider(IDataProvider provider)
             => _providers.Add(provider);
 
         /// <summary>
-        /// Deregister provider
+        /// Deregister provider from data manager
         /// </summary>
         /// <param name="provider">Data provider to remove</param>
         public void DeregisterDataProvider(IDataProvider provider)
@@ -64,10 +64,16 @@ namespace Customizer.Utility {
         /// <param name="stream">Base content stream</param>
         /// <param name="uri">URI to use</param>
         /// <returns>Stream chosen from URI scheme</returns>
-        private static Stream GetModifiedStream(Stream stream, Uri uri) =>
-            "deflate".Equals(uri.Scheme, StringComparison.InvariantCultureIgnoreCase)
-                ? new DeflateStream(stream, CompressionMode.Decompress)
-                : stream;
+        private static Stream GetModifiedStream(Stream stream, Uri uri) {
+            switch (uri.Scheme.ToUpperInvariant()) {
+                case "FILE":
+                    return stream;
+                case "DEFLATE":
+                    return new DeflateStream(stream, CompressionMode.Decompress);
+                default:
+                    return stream;
+            }
+        }
 
         /// <summary>
         /// Procedural resource provider (hex colors)
@@ -77,11 +83,12 @@ namespace Customizer.Utility {
                 if (uri == null)
                     throw new ArgumentNullException(nameof(uri));
                 if (!"proc".Equals(uri.Host, StringComparison.InvariantCultureIgnoreCase)) return null;
-                Match match;
-                if (!(match = Regex.Match(uri.AbsolutePath, @"\/([A-Za-z]*):(.*)")).Success) return null;
+                var match = Regex.Match(uri.AbsolutePath, @"\/([A-Za-z]*):(.*)");
+                if (!match.Success) return null;
                 switch (match.Groups[1].Value.ToUpperInvariant()) {
                     case "COLOR":
-                        if (!uint.TryParse(match.Groups[2].Value.TrimEnd('/'), NumberStyles.HexNumber, null, out var res))
+                        if (!uint.TryParse(match.Groups[2].Value.TrimEnd('/'), NumberStyles.HexNumber, null,
+                            out var res))
                             return null;
                         var resStream = new MemoryStream();
                         using (var img = new Image<Rgba32>(1, 1)

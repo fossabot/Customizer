@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-//using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -36,21 +35,19 @@ namespace Customizer.Authoring {
             for (var iSubMesh = 0; iSubMesh < subMeshes.Length; iSubMesh++) {
                 // Define sub-mesh
                 var subMesh = scene.Meshes[iSubMesh];
-                //var vertices = new Vector3[subMesh.VertexCount];
                 var vertices = new float[subMesh.VertexCount * 3];
-                //var uvs = new Vector2[subMesh.VertexCount];
                 var uvs = new float[subMesh.VertexCount * 2];
-                //var normals = new Vector3[subMesh.VertexCount];
                 var normals = new float[subMesh.VertexCount * 3];
-                var weights = new BoneWeight[subMesh.VertexCount];
+                var boneIds = new int[subMesh.VertexCount * 4];
+                var boneWeights = new float[subMesh.VertexCount * 4];
+                var boneCounts = new int[subMesh.VertexCount];
                 var triangles = new int[subMesh.FaceCount * 3];
                 subMeshes[iSubMesh] = new LiveSubMesh {
-                    Vertices = vertices, UVs = uvs, Normals = normals, BoneWeights = weights, Triangles = triangles,
+                    Vertices = vertices, UVs = uvs, Normals = normals, BoneIds = boneIds, BoneWeights = boneWeights,
+                    Triangles = triangles,
                     MaterialIdx = subMesh.MaterialIndex, VertexCount = subMesh.VertexCount
                 };
                 // Get vertices
-                //for (var iVertex = 0; iVertex < vertices.Length; iVertex++)
-                //    vertices[iVertex] = subMesh.Vertices[iVertex].ToVector3();
                 for (var iVertex = 0; iVertex < subMesh.Vertices.Count; iVertex++) {
                     vertices[iVertex * 3] = subMesh.Vertices[iVertex].X;
                     vertices[iVertex * 3 + 1] = subMesh.Vertices[iVertex].Y;
@@ -58,16 +55,12 @@ namespace Customizer.Authoring {
                 }
 
                 // Get UVs
-                //for (var iUv = 0; iUv < uvs.Length; iUv++)
-                //    uvs[iUv] = subMesh.TextureCoordinateChannels[0][iUv].ToVector2();
                 for (var iUv = 0; iUv < subMesh.TextureCoordinateChannels[0].Count; iUv++) {
                     uvs[iUv * 2] = subMesh.TextureCoordinateChannels[0][iUv].X;
                     uvs[iUv * 2 + 1] = subMesh.TextureCoordinateChannels[0][iUv].X;
                 }
 
                 // Get normals
-                //for (var iNormal = 0; iNormal < normals.Length; iNormal++)
-                //    normals[iNormal] = subMesh.Normals[iNormal].ToVector3();
                 for (var iNormal = 0; iNormal < subMesh.Normals.Count; iNormal++) {
                     normals[iNormal * 3] = subMesh.Normals[iNormal].X;
                     normals[iNormal * 3 + 1] = subMesh.Normals[iNormal].Y;
@@ -84,32 +77,10 @@ namespace Customizer.Authoring {
                 // Get bones
                 foreach (var bone in subMesh.Bones) {
                     foreach (var vWeight in bone.VertexWeights) {
-                        var weight = weights[vWeight.VertexID];
-                        var bId = bones.IndexOf(bone);
-                        var bWe = vWeight.Weight;
-                        // ReSharper disable once SwitchStatementMissingSomeCases
-                        switch (weight.count) {
-                            case 0:
-                                weight.bone1 = bId;
-                                weight.weight1 = bWe;
-                                break;
-                            case 1:
-                                weight.bone2 = bId;
-                                weight.weight2 = bWe;
-                                break;
-                            case 2:
-                                weight.bone3 = bId;
-                                weight.weight3 = bWe;
-                                break;
-                            case 3:
-                                weight.bone4 = bId;
-                                weight.weight4 = bWe;
-                                break;
-                        }
-
-                        if (weight.count != 4)
-                            weight.count++;
-                        weights[vWeight.VertexID] = weight;
+                        var count = boneCounts[vWeight.VertexID];
+                        if (count == 4) continue;
+                        boneIds[4 * vWeight.VertexID + count] = bones.IndexOf(bone);
+                        boneWeights[4 * vWeight.VertexID + count] = vWeight.Weight;
                     }
 
                     // Skip bone if already processed
@@ -180,14 +151,6 @@ namespace Customizer.Authoring {
                 JsonSerializer.Serialize(writer, value, opts);
             }
         }
-
-        /*
-        private static Vector2 ToVector2(this Vector3D vector)
-            => new Vector2(vector.X, vector.Y);
-
-        private static Vector3 ToVector3(this Vector3D vector)
-            => new Vector3(vector.X, vector.Y, vector.Z);
-        */
 
         // ReSharper disable InconsistentNaming
         private static Matrix4x4 ToMatrix4x4(this Assimp.Matrix4x4 matrix) =>

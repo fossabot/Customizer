@@ -39,12 +39,12 @@ using System.IO;
 
 public class SomeClass {
     public void LoadAssets(string pathToCzBox, string someContentFolder) {
-        var rm = new DataManager();
-        rm.RegisterDataProvider(
+        var dm = new DataManager();
+        dm.RegisterDataProvider(
             new FileDataProvider(someContentFolder));
         LiveContent content;
         using (var box = CzBox.Load(new FileInfo(pathToCzBox).OpenRead())) {
-            content = box.LoadLiveContent(rm, Defaults.LiveLoadOptions);
+            content = box.LoadLiveContent(dm, Defaults.LiveLoadOptions);
         }
 
         foreach (var e in content.Meshes) {

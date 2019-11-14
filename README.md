@@ -148,7 +148,3 @@ Unpack CzBox container
 Usage:
 
 `CzTool unpack <sourceFile> <targetDir>`
-
-## TO-DO
-
-* Modified mesh refit procedure

@@ -3,15 +3,13 @@ using System;
 namespace Customizer.Modeling {
     public static class ModelUtil {
         /// <summary>
-        /// Refit mesh against mesh variant originally used 
+        /// Refit mesh against mesh variant originally used
         /// </summary>
         /// <param name="baseVariant">Original variant</param>
         /// <param name="targetVariant">Target variant</param>
         /// <param name="sourceMesh">Mesh to modify</param>
-        /// <param name="options">Processing configuration</param>
         /// <returns>Newly allocated refit mesh</returns>
-        public static LiveMesh Refit(LiveMesh baseVariant, LiveMesh targetVariant, LiveMesh sourceMesh,
-            RefitOptions? options = null) {
+        public static LiveMesh Refit(LiveMesh baseVariant, LiveMesh targetVariant, LiveMesh sourceMesh) {
             if (baseVariant == null)
                 throw new ArgumentNullException(nameof(baseVariant));
             if (targetVariant == null)
@@ -41,7 +39,6 @@ namespace Customizer.Modeling {
                     Sub(baseVariant.SubMeshes[closestBaseIdx].Vertices, closestBaseVert,
                         targetVariant.SubMeshes[closestBaseIdx].Vertices, closestBaseVert, delta, 0, 3);
                     Add(sub.Vertices, iSubMesh, delta, 0, sub.Vertices, iSubMesh, 3);
-                    // TODO "better" face-based transform
                     // Determine face
                     // Procedural transformation
                 }

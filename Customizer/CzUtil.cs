@@ -52,7 +52,7 @@ namespace Customizer {
                     c++;
                 } while (v != -1 && v != 0 && c < maxLength);
 
-                var str = Encoding.UTF8.GetString(ms.ToArray());
+                var str = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
                 return str;
             }
         }

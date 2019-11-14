@@ -130,7 +130,7 @@ namespace Customizer.Authoring {
                 stream.CopyTo(ms);
                 var opts = new JsonSerializerOptions();
                 opts.Converters.Add(new JsonStringEnumConverter());
-                return JsonSerializer.Deserialize<T>(ms.ToArray(), opts);
+                return JsonSerializer.Deserialize<T>(ms.GetBuffer().AsSpan(0, (int) ms.Length), opts);
             }
         }
 

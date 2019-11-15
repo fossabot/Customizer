@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +14,17 @@ namespace Customizer.Utility {
     /// Basic serialization class 
     /// </summary>
     public static class Serializer {
+        private static readonly ConcurrentDictionary<Type, Dictionary<int, MemberInfo>> CustomSerDict =
+            new ConcurrentDictionary<Type, Dictionary<int, MemberInfo>>();
+
+        private static readonly UTF8Encoding TextEncoding = new UTF8Encoding(false);
+
+        /// <summary>
+        /// Clear references to custom-serialized type tag maps
+        /// </summary>
+        public static void ClearCachedCustomMemberData()
+            => CustomSerDict.Clear();
+
         /// <summary>
         /// Serialize object to stream
         /// </summary>
@@ -72,7 +84,7 @@ namespace Customizer.Utility {
             }
 
             if (value is string vString) {
-                var arr = new UTF8Encoding(false).GetBytes(vString);
+                var arr = TextEncoding.GetBytes(vString);
                 stream.Write(arr, 0, arr.Length);
                 stream.WriteByte(0);
                 return;
@@ -313,11 +325,7 @@ namespace Customizer.Utility {
 
             var members = t.GetMembers();
             if (t.GetCustomAttribute<CzCustomSerializeMembersAttribute>() != null) {
-                var dict = new Dictionary<int, MemberInfo>(members.Length);
-                foreach (var m in members) {
-                    if (m.GetCustomAttribute<CzSerializeAttribute>() is CzSerializeAttribute attrib)
-                        dict.Add(attrib.Tag, m);
-                }
+                var dict = CustomSerDict.GetOrAdd(t, GenerateCustomSerializeDict);
 
                 int tag;
                 do {
@@ -405,5 +413,13 @@ namespace Customizer.Utility {
         private static bool IsDictionaryType(Type t)
             => t.IsGenericType &&
                t.GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
+
+        private static Dictionary<int, MemberInfo> GenerateCustomSerializeDict(Type type) {
+            var dRes = new Dictionary<int, MemberInfo>();
+            foreach (var m in type.GetMembers())
+                if (m.GetCustomAttribute<CzSerializeAttribute>() is CzSerializeAttribute attrib)
+                    dRes[attrib.Tag] = m;
+            return dRes;
+        }
     }
 }

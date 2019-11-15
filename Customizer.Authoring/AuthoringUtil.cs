@@ -81,6 +81,7 @@ namespace Customizer.Authoring {
                         if (count == 4) continue;
                         boneIds[4 * vWeight.VertexID + count] = bones.IndexOf(bone);
                         boneWeights[4 * vWeight.VertexID + count] = vWeight.Weight;
+                        boneCounts[vWeight.VertexID]++;
                     }
 
                     // Skip bone if already processed

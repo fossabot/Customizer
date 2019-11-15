@@ -49,7 +49,7 @@ namespace Customizer.Box {
                     Serializer.Serialize(ds, entries);
                 }
 
-                stream.Write7B(ms.Length);
+                stream.Write7S64(ms.Length);
                 ms.Position = 0;
                 ms.CopyTo(stream);
             }
@@ -65,7 +65,7 @@ namespace Customizer.Box {
         public static CzBox Load(Stream stream, bool leaveOpen = false) {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-            var baseOff = stream.Read7B(out var sbLen);
+            var baseOff = stream.Read7S64(out var sbLen);
             var entries = new Dictionary<string, Tuple<int, int>>();
             ContentDefinition contentDefinition;
             using (var ds = new DeflateStream(stream, CompressionMode.Decompress, true)) {

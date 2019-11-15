@@ -8,36 +8,37 @@ namespace Customizer {
     /// General utility functions
     /// </summary>
     internal static class CzUtil {
-        internal static long Read7B(this Stream stream, out int len) {
-            long value = 0;
+        internal static long Read7S64(this Stream stream, out int len) {
+            ulong value = 0;
             len = 0;
             var bits = 0;
             while (bits < sizeof(long) * 8) {
                 var v = stream.ReadByte();
                 if (v == -1)
                     throw new EndOfStreamException();
-                value |= (v & 0x7f) << bits;
+                value |= (ulong) (v & 0x7f) << bits;
                 len++;
                 bits += 7;
                 if (v > 0x7f)
                     break;
             }
 
-            return value;
+            return (long) value;
         }
 
-        internal static int Write7B(this Stream stream, long value) {
+        internal static int Write7S64(this Stream stream, long value) {
+            var uValue = (ulong)value;
             var len = 0;
             do {
                 byte v;
-                if (value < 0x80)
-                    v = (byte) (0x80 | (value & 0x7f));
+                if (uValue < 0x80)
+                    v = (byte) (0x80 | (uValue & 0x7f));
                 else
-                    v = (byte) (value & 0x7f);
+                    v = (byte) (uValue & 0x7f);
                 stream.WriteByte(v);
                 len++;
-                value >>= 7;
-            } while (value != 0);
+                uValue >>= 7;
+            } while (uValue != 0);
 
             return len;
         }

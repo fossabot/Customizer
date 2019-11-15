@@ -16,7 +16,7 @@ namespace Customizer {
                 var v = stream.ReadByte();
                 if (v == -1)
                     throw new EndOfStreamException();
-                value ^= (v & 0x7f) << bits;
+                value |= (v & 0x7f) << bits;
                 len++;
                 bits += 7;
                 if (v > 0x7f)
@@ -31,7 +31,7 @@ namespace Customizer {
             do {
                 byte v;
                 if (value < 0x80)
-                    v = (byte) (0x80 ^ (value & 0x7f));
+                    v = (byte) (0x80 | (value & 0x7f));
                 else
                     v = (byte) (value & 0x7f);
                 stream.WriteByte(v);
@@ -44,15 +44,16 @@ namespace Customizer {
 
         internal static string ReadCString(this Stream stream, int maxLength = int.MaxValue) {
             using (var ms = new MemoryStream()) {
-                int v, c = 0;
+                int c = 0;
                 do {
-                    v = stream.ReadByte();
-                    if (v != -1 && v != 0)
-                        ms.WriteByte((byte) v);
+                    var v = stream.ReadByte();
+                    if (v == -1 || v == 0)
+                        break;
+                    ms.WriteByte((byte) v);
                     c++;
-                } while (v != -1 && v != 0 && c < maxLength);
+                } while (c < maxLength);
 
-                var str = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
+                var str = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int) ms.Length);
                 return str;
             }
         }

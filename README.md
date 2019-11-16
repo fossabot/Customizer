@@ -21,7 +21,7 @@ Content paths in content definition files are specified as URIs.
 
 * The URI's scheme (`scheme://xxx/xxx`) determines how the input stream is transformed when read. Supported values are:
   - `file`: No transformation
-  - `deflate`: Decompress using deflate algorithm
+  - `deflate`: Decompress using deflate format
 * The URI's host (`xxx://host/xxx`) determines which data providers will look for the content.
   - `local`: CzBox and filesystem providers
   - `proc`: Procedural data (built-in for `DataManager`)

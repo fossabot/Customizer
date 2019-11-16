@@ -8,7 +8,7 @@
     <AssemblyVersion>2.0.0</AssemblyVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>Copyright ©2019 teamRokuro</Copyright>
-    <RepositoryUrl>https://github.com/ryuuguze/Customizer</RepositoryUrl>
+    <RepositoryUrl>https://github.com/teamRokuro/Customizer</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>Custom content format conversion library</Description>

@@ -11,7 +11,7 @@
     <PackOnBuild>true</PackOnBuild>
     <Owners>riina</Owners>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RepositoryUrl>https://github.com/ryuuguze/Customizer</RepositoryUrl>
+    <RepositoryUrl>https://github.com/teamRokuro/Customizer</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageVersion>2.0.0</PackageVersion>

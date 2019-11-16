@@ -19,41 +19,47 @@ namespace Customizer.Content {
         public Dictionary<string, string> MeshPaths { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
+        /// Map of anim names to URIs
+        /// </summary>
+        [CzSerialize(0)]
+        public Dictionary<string, string> AnimPaths { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// Map of texture names to URIs
         /// </summary>
-        [CzSerialize(1)]
+        [CzSerialize(2)]
         public Dictionary<string, string> TexturePaths { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Map of resource names to URIs
         /// </summary>
-        [CzSerialize(2)]
+        [CzSerialize(3)]
         public Dictionary<string, string> ResourcePaths { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Map of translation names to URIs
         /// </summary>
-        [CzSerialize(3)]
+        [CzSerialize(4)]
         public Dictionary<string, string> TranslationPaths { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Map of mesh config names to URIs
         /// </summary>
-        [CzSerialize(4)]
+        [CzSerialize(5)]
         public Dictionary<string, MeshConfig> MeshConfigs { get; set; } = new Dictionary<string, MeshConfig>();
 
         /// <summary>
         /// Map of composite texture names to definitions
         /// </summary>
-        [CzSerialize(5)]
+        [CzSerialize(6)]
         public Dictionary<string, CoTextureDefinition> CoTextures { get; set; } =
             new Dictionary<string, CoTextureDefinition>();
 
         /// <summary>
-        /// Main mesh for this content unit
+        /// Main asset for this content unit
         /// </summary>
-        [CzSerialize(6)]
-        public string MainMesh { get; set; }
+        [CzSerialize(7)]
+        public string MainAsset { get; set; }
 
         public object Clone() {
             var res = new ContentDefinition();

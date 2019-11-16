@@ -21,6 +21,11 @@ namespace Customizer.Content {
         public Dictionary<string, LiveMesh> Meshes = new Dictionary<string, LiveMesh>();
 
         /// <summary>
+        /// Map of mesh names to loaded animations
+        /// </summary>
+        public Dictionary<string, LiveAnim> Anims = new Dictionary<string, LiveAnim>();
+
+        /// <summary>
         /// Map of texture names to loaded textures
         /// </summary>
         public Dictionary<string, Image<Rgba32>> Textures = new Dictionary<string, Image<Rgba32>>();
@@ -65,6 +70,28 @@ namespace Customizer.Content {
             Meshes.Remove(name);
             return true;
         }
+        
+        /// <summary>
+        /// Add or update animation for this instance
+        /// </summary>
+        /// <param name="name">Animation name</param>
+        /// <param name="path">Original path of resource</param>
+        /// <param name="anim">Animation to add</param>
+        public void AddAnim(string name, string path, LiveAnim anim) {
+            Definition.AnimPaths[name] = path;
+            Anims[name] = anim;
+        }
+
+        /// <summary>
+        /// Remove animation for this instance
+        /// </summary>
+        /// <param name="name">Animation name</param>
+        public void RemoveAnim(string name) {
+            Definition.AnimPaths.Remove(name);
+            Anims.Remove(name);
+        }
+
+
 
         /// <summary>
         /// Add or update texture for this instance and update composite textures

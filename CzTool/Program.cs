@@ -15,11 +15,12 @@ using SixLabors.ImageSharp;
 namespace CzTool {
     internal static class Program {
         private static int Main(string[] args) => Parser.Default
-            .ParseArguments<TemplateOptions, MakeMeshOptions, MakeTlOptions, PackOptions, UnpackOptions,
-                CompositeOptions>(args)
+            .ParseArguments<TemplateOptions, MakeMeshOptions, MakeAnimOptions, MakeTlOptions, PackOptions, UnpackOptions
+                , CompositeOptions>(args)
             .MapResult(
                 (TemplateOptions opts) => RunTemplate(opts),
                 (MakeMeshOptions opts) => RunMakeMesh(opts),
+                (MakeAnimOptions opts) => RunMakeAnim(opts),
                 (MakeTlOptions opts) => RunMakeTl(opts),
                 (PackOptions opts) => RunPack(opts),
                 (UnpackOptions opts) => RunUnpack(opts),
@@ -91,7 +92,7 @@ namespace CzTool {
             return 0;
         }
 
-        [Verb("makemesh", HelpText = "Generate deflate compressed LiveMesh from FBX.")]
+        [Verb("makemesh", HelpText = "Generate LiveMesh from FBX.")]
         private class MakeMeshOptions {
             [Value(0, MetaName = "sourceFile", Required = true, HelpText = "FBX source file to read.")]
             public string SourceFile { get; set; }
@@ -112,11 +113,17 @@ namespace CzTool {
                 HelpText = "Set the unique name of the mesh originally fit against.")]
             public string FitUniqueName { get; set; } = null;
 
+            [Option('c', "compress", HelpText = "Deflate-compress output.")]
+            public bool Compress { get; set; } = false;
+
+            [Option('d', "debugLog", HelpText = "Print loader debug log messages.")]
+            public bool DebugLog { get; set; } = false;
+
             [Usage]
             // ReSharper disable once UnusedMember.Local
             public static IEnumerable<Example> Examples =>
                 new List<Example> {
-                    new Example("Generate deflate compressed LiveMesh from FBX",
+                    new Example("Generate LiveMesh from FBX",
                         new MakeMeshOptions {SourceFile = "<sourceFile>", TargetFile = "<targetFile>"})
                 };
         }
@@ -134,26 +141,94 @@ namespace CzTool {
                     attachPointRegexs = mf.AttachPoints;
                 }
 
-                Console.Write("Parsing... ");
-                mesh = AuthoringUtil.GenerateLiveMesh(ifs, boneRegexs, attachPointRegexs);
-                Console.WriteLine("Done.");
+                Console.WriteLine("Parsing...");
+                mesh = options.DebugLog
+                    ? AuthoringUtil.GenerateLiveMesh(ifs, boneRegexs, attachPointRegexs, Console.WriteLine)
+                    : AuthoringUtil.GenerateLiveMesh(ifs, boneRegexs, attachPointRegexs);
             }
 
             mesh.UniqueName = options.UniqueName;
             mesh.VariantTypeName = options.VariantTypeName;
             mesh.FitUniqueName = options.FitUniqueName;
 
-            using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
-                CompressionLevel.Optimal, false)) {
-                Console.Write("Serializing... ");
+            Stream ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write);
+            try {
+                if (options.Compress)
+                    ofs = new DeflateStream(ofs, CompressionLevel.Optimal, false);
+                Console.WriteLine("Serializing...");
                 Serializer.Serialize(ofs, mesh);
-                Console.WriteLine("Done.");
+            }
+            finally {
+                ofs.Dispose();
             }
 
             return 0;
         }
 
-        [Verb("maketl", HelpText = "Generate deflate compressed translation dictionary from JSON.")]
+        [Verb("makeanim", HelpText = "Generate LiveAnim from FBX.")]
+        private class MakeAnimOptions {
+            [Value(0, MetaName = "sourceFile", Required = true, HelpText = "FBX source file to read.")]
+            public string SourceFile { get; set; }
+
+            [Value(1, MetaName = "targetFile", Required = true, HelpText = "Target file to write.")]
+            public string TargetFile { get; set; }
+
+            [Option('m', "matchFile", MetaValue = "FILE", HelpText = "Use bone regex JSON file.")]
+            public string MatchFile { get; set; } = null;
+
+            [Option('s', "sourceUniqueName", MetaValue = "NAME",
+                HelpText = "Set the unique name of the mesh originally animated against.")]
+            public string SourceUniqueName { get; set; } = null;
+
+            [Option('c', "compress", HelpText = "Deflate-compress output.")]
+            public bool Compress { get; set; } = false;
+
+            [Option('d', "debugLog", HelpText = "Print loader debug log messages.")]
+            public bool DebugLog { get; set; } = false;
+
+            [Usage]
+            // ReSharper disable once UnusedMember.Local
+            public static IEnumerable<Example> Examples =>
+                new List<Example> {
+                    new Example("Generate LiveAnim from FBX",
+                        new MakeAnimOptions {SourceFile = "<sourceFile>", TargetFile = "<targetFile>"})
+                };
+        }
+
+        private static int RunMakeAnim(MakeAnimOptions options) {
+            LiveAnim anim;
+            using (var ifs = new FileStream(options.SourceFile, FileMode.Open, FileAccess.Read)) {
+                Dictionary<string, BoneType> boneRegexs = null;
+                if (options.MatchFile != null) {
+                    MatchRules mf;
+                    using (var mfFs = new FileStream(options.MatchFile, FileMode.Open, FileAccess.Read))
+                        mf = AuthoringUtil.JsonDeserialize<MatchRules>(mfFs);
+                    boneRegexs = mf.Bones;
+                }
+
+                Console.WriteLine("Parsing...");
+                anim = options.DebugLog
+                    ? AuthoringUtil.GenerateLiveAnim(ifs, boneRegexs, Console.WriteLine)
+                    : AuthoringUtil.GenerateLiveAnim(ifs, boneRegexs);
+            }
+
+            anim.SourceUniqueName = options.SourceUniqueName;
+
+            Stream ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write);
+            try {
+                if (options.Compress)
+                    ofs = new DeflateStream(ofs, CompressionLevel.Optimal, false);
+                Console.WriteLine("Serializing...");
+                Serializer.Serialize(ofs, anim);
+            }
+            finally {
+                ofs.Dispose();
+            }
+
+            return 0;
+        }
+
+        [Verb("maketl", HelpText = "Generate translation dictionary from JSON.")]
         private class MakeTlOptions {
             [Value(0, MetaName = "sourceFile", Required = true, HelpText = "JSON source file to read.")]
             public string SourceFile { get; set; }
@@ -161,11 +236,14 @@ namespace CzTool {
             [Value(1, MetaName = "targetFile", Required = true, HelpText = "Target file to write.")]
             public string TargetFile { get; set; }
 
+            [Option('c', "compress", HelpText = "Deflate-compress output.")]
+            public bool Compress { get; set; } = false;
+
             [Usage]
             // ReSharper disable once UnusedMember.Local
             public static IEnumerable<Example> Examples =>
                 new List<Example> {
-                    new Example("Generate deflate compressed translation dictionary from JSON",
+                    new Example("Generate translation dictionary from JSON",
                         new MakeTlOptions {SourceFile = "<sourceFile>", TargetFile = "<targetFile>"})
                 };
         }
@@ -174,9 +252,17 @@ namespace CzTool {
             Dictionary<string, string> dict;
             using (var ifs = new FileStream(options.SourceFile, FileMode.Open, FileAccess.Read))
                 dict = AuthoringUtil.JsonDeserialize<Dictionary<string, string>>(ifs);
-            using (var ofs = new DeflateStream(new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write),
-                CompressionLevel.Optimal, false))
+            Stream ofs = new FileStream(options.TargetFile, FileMode.Create, FileAccess.Write);
+            try {
+                if (options.Compress)
+                    ofs = new DeflateStream(ofs, CompressionLevel.Optimal, false);
+                Console.WriteLine("Serializing...");
                 Serializer.Serialize(ofs, dict);
+            }
+            finally {
+                ofs.Dispose();
+            }
+
             return 0;
         }
 

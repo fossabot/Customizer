@@ -9,6 +9,7 @@ namespace Customizer.Utility {
     /// </summary>
     public sealed class CacheManager {
         private readonly Dictionary<string, LiveMesh> _meshes = new Dictionary<string, LiveMesh>();
+        private readonly Dictionary<string, LiveAnim> _anims = new Dictionary<string, LiveAnim>();
         private readonly Dictionary<string, Image<Rgba32>> _textures = new Dictionary<string, Image<Rgba32>>();
         private readonly Dictionary<string, byte[]> _resources = new Dictionary<string, byte[]>();
 
@@ -57,6 +58,49 @@ namespace Customizer.Utility {
         /// </summary>
         public void ClearMeshes()
             => _meshes.Clear();
+
+        /// <summary>
+        /// Get cached animation
+        /// </summary>
+        /// <param name="path">Path to use</param>
+        /// <returns>Cached animation or null</returns>
+        public LiveAnim GetAnim(string path)
+            => _anims.TryGetValue(path, out var res) ? res : null;
+
+        /// <summary>
+        /// Add cached animation
+        /// </summary>
+        /// <param name="path">Path to use</param>
+        /// <param name="anim">Animation to add</param>
+        public void AddAnim(string path, LiveAnim anim)
+            => _anims.Add(path, anim);
+
+        /// <summary>
+        /// Get count of cached animations
+        /// </summary>
+        /// <returns>Count of cached animations</returns>
+        public int GetAnimCount()
+            => _anims.Count;
+
+        /// <summary>
+        /// Get enumerator for animations by path
+        /// </summary>
+        /// <returns>Enumerator for animations by path</returns>
+        public Dictionary<string, LiveAnim>.Enumerator GetAnimEnumerator()
+            => _anims.GetEnumerator();
+
+        /// <summary>
+        /// Remove cached animation
+        /// </summary>
+        /// <param name="path">Path of animation to remove</param>
+        public void RemoveAnim(string path)
+            => _anims.Remove(path);
+
+        /// <summary>
+        /// Clear cached animations
+        /// </summary>
+        public void ClearAnims()
+            => _anims.Clear();
 
         /// <summary>
         /// Get cached texture

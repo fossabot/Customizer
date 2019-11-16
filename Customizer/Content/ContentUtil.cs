@@ -52,6 +52,24 @@ namespace Customizer.Content {
                     meshes.Add(e.Key, mesh);
                 }
             }
+            
+            // Load animations
+            var anims = new Dictionary<string, LiveAnim>();
+            if (opts.LoadAnims) {
+                foreach (var e in definition.AnimPaths) {
+                    var path = new Uri(e.Value);
+                    LiveAnim anim;
+                    if (!opts.UseAnimCache || (anim = cacheManager?.GetAnim(path.AbsolutePath)) == null) {
+                        using (var stream = dataManager.GetStream(path))
+                            anim = Serializer.Deserialize<LiveAnim>(stream);
+
+                        if (opts.UseAnimCache)
+                            cacheManager?.AddAnim(path.AbsolutePath, anim);
+                    }
+
+                    anims.Add(e.Key, anim);
+                }
+            }
 
             // Load textures
             var baseTextures = new Dictionary<string, Image<Rgba32>>();
@@ -128,6 +146,7 @@ namespace Customizer.Content {
             return new LiveContent {
                 Definition = definition,
                 Meshes = meshes,
+                Anims = anims,
                 Textures = baseTextures,
                 RenderedCoTextures = renderedCoTextures,
                 Resources = resources,

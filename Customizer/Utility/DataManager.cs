@@ -39,6 +39,15 @@ namespace Customizer.Utility {
         /// <param name="uri">Location of resource</param>
         /// <returns>Stream or null</returns>
         /// <exception cref="ArgumentNullException"><paramref name="uri"/> is null</exception>
+        public Stream GetStream(string uri)
+            => GetStream(new Uri(uri));
+
+        /// <summary>
+        /// Attempt to load stream for given uri
+        /// </summary>
+        /// <param name="uri">Location of resource</param>
+        /// <returns>Stream or null</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is null</exception>
         public Stream GetStream(Uri uri) {
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));

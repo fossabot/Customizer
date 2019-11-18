@@ -3,7 +3,8 @@
 
 | Package                | Release |
 |------------------------|---------|
-| `Customizer`           | [![NuGet](https://img.shields.io/nuget/v/Customizer.svg)](https://www.nuget.org/packages/Customizer/) |
+| `Customizer`           | [![NuGet](https://img.shields.io/nuget/v/Customizer.svg)](https://www.nuget.org/packages/Customizer/) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FteamRokuro%2FCustomizer.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FteamRokuro%2FCustomizer?ref=badge_shield)
+|
 | `Customizer.Authoring` | [![NuGet](https://img.shields.io/nuget/v/Customizer.Authoring.svg)](https://www.nuget.org/packages/Customizer.Authoring/) |
 
 This library is meant to provide a basic common custom content consumption platform.
@@ -184,3 +185,7 @@ Unpack CzBox container
 Usage:
 
 `CzTool unpack <sourceFile> <targetDir>`
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FteamRokuro%2FCustomizer.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FteamRokuro%2FCustomizer?ref=badge_large)
